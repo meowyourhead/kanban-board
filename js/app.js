@@ -484,7 +484,7 @@
       var ids = card.labelIds.slice();
       var ix = ids.indexOf(lid);
       if (ix === -1) ids.push(lid); else ids.splice(ix, 1);
-      commit(S.setCardLabels(App.board, App.activeCardId, ids), { skipModal: true });
+      commit(S.setCardLabels(App.board, App.activeCardId, ids));
     }
 
     function addLabel() {
@@ -498,7 +498,7 @@
       var ids = card.labelIds.concat(newIds);
       b = S.setCardLabels(b, App.activeCardId, ids);
       nameEl.value = '';
-      commit(b, { skipModal: true });
+      commit(b);
       nameEl.focus();
     }
     $('#cm-add-label').addEventListener('click', addLabel);
@@ -507,11 +507,11 @@
     // checklist (delegated, since items re-render)
     $('#cm-checklist').addEventListener('change', function (e) {
       var cb = e.target.closest('input[data-item]');
-      if (cb) commit(S.toggleChecklistItem(App.board, App.activeCardId, cb.getAttribute('data-item')), { skipModal: true });
+      if (cb) commit(S.toggleChecklistItem(App.board, App.activeCardId, cb.getAttribute('data-item')));
     });
     $('#cm-checklist').addEventListener('click', function (e) {
       var del = e.target.closest('[data-del-item]');
-      if (del) commit(S.removeChecklistItem(App.board, App.activeCardId, del.getAttribute('data-del-item')), { skipModal: true });
+      if (del) commit(S.removeChecklistItem(App.board, App.activeCardId, del.getAttribute('data-del-item')));
     });
 
     function addCheckItem() {
@@ -519,7 +519,7 @@
       var v = el.value.trim();
       if (!v) { el.focus(); return; }
       el.value = '';
-      commit(S.addChecklistItem(App.board, App.activeCardId, { text: v }), { skipModal: true });
+      commit(S.addChecklistItem(App.board, App.activeCardId, { text: v }));
       el.focus();
     }
     $('#cm-add-item').addEventListener('click', addCheckItem);

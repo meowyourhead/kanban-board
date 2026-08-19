@@ -147,7 +147,7 @@
           ok('T1 initial: welcome card', !!bySel('.card .card-title'));
 
           // T2: quick-add a card
-          bySel('.column [data-action="add-card"]').click();
+          bySel('.column [data-action="quick-add"]').click();
           var qa = $('quick-add-text');
           ok('T2 quick-add composer visible', !!qa);
           if (qa) {
@@ -179,11 +179,18 @@
           ok('T4 smoke card found in DOM', !!smokeCardEl);
           if (smokeCardEl) smokeCardEl.click();
           ok('T4 modal open', !$('card-modal').hidden);
+          // The app commits modal fields on live input/change events (app.js bindModal),
+          // so simulate real user input by firing those events.
           $('cm-title').value = 'Smoke test card XYZ (renamed)';
+          fire($('cm-title'), 'input');
           $('cm-desc').value = 'smoke description text';
+          fire($('cm-desc'), 'input');
           $('cm-priority').value = '3';
+          fire($('cm-priority'), 'change');
           $('cm-due').value = '2020-01-01';
+          fire($('cm-due'), 'change');
           $('cm-assignee').value = 'tester';
+          fire($('cm-assignee'), 'change');
           var ni = $('cm-new-item');
           ni.value = 'step one';
           fire(ni, 'keydown', { key: 'Enter' });
@@ -193,7 +200,14 @@
           ok('T4 checklist item checked', !!bySel('#cm-checklist .cl-item.done'));
           $('cm-close').click();
           ok('T4 modal closed', $('card-modal').hidden);
-          ok('T4 title saved', document.body.textContent.indexOf('Smoke test card XYZ (renamed)') !== -1);
+          // Check the board DOM (not document.body.textContent — this test's own
+          // script text lives in <body> and would make that check a false positive).
+          var renamedInBoard = false;
+          cards = bySelAll('.card');
+          for (i = 0; i < cards.length; i++) {
+            if (cards[i].textContent.indexOf('Smoke test card XYZ (renamed)') !== -1) renamedInBoard = true;
+          }
+          ok('T4 title saved', renamedInBoard);
 
           // T5: overdue meta visible (due 2020)
           var renamedCard = null;
@@ -203,35 +217,36 @@
           }
           ok('T5 overdue meta shown', renamedCard && !!renamedCard.querySelector('.meta.due.overdue'));
 
-          // T6: search
+          // T6: search (non-matches are filtered out of the DOM)
           var s = $('search');
           s.value = 'Smoke test card XYZ (renamed)';
           fire(s, 'input');
-          var welcomeHidden = false, smokeShown = true;
+          var welcomeGone = true, smokeShown = false;
           cards = bySelAll('.card');
           for (i = 0; i < cards.length; i++) {
-            var isWelcome = cards[i].textContent.indexOf('Welcome to your Kanban board') !== -1;
-            if (isWelcome) welcomeHidden = cards[i].classList.contains('hidden');
-            else if (cards[i].textContent.indexOf('Smoke test card') !== -1) smokeShown = !cards[i].classList.contains('hidden');
+            if (cards[i].textContent.indexOf('Welcome to your Kanban board') !== -1) welcomeGone = false;
+            if (cards[i].textContent.indexOf('Smoke test card') !== -1) smokeShown = true;
           }
-          ok('T6 search hides non-matches', welcomeHidden);
+          ok('T6 search hides non-matches', welcomeGone);
           ok('T6 search shows match', smokeShown);
           s.value = '';
           fire(s, 'input');
-          ok('T6 search cleared', bySel('.card').classList.contains('hidden') === false);
+          ok('T6 search cleared', bySelAll('.card').length === 2, bySelAll('.card').length);
 
           // T7: theme toggle + persistence
           var before = document.documentElement.getAttribute('data-theme');
           $('btn-theme').click();
           var after = document.documentElement.getAttribute('data-theme');
           ok('T7 theme flipped', before !== after, before + ' -> ' + after);
-          ok('T7 theme persisted', !!localStorage.getItem('kanban.theme.v1'));
+          var themeSaved = null;
+          try { themeSaved = JSON.parse(localStorage.getItem('kanban.board.v1')).theme; } catch (e) { themeSaved = null; }
+          ok('T7 theme persisted', themeSaved === after, themeSaved);
 
           // T8: collapse / expand
           var smokeList = columnWithTitle('Smoke list');
           if (smokeList) {
             smokeList.querySelector('[data-action="collapse"]').click();
-            ok('T8 column collapsed', smokeList.classList.contains('collapsed'));
+            ok('T8 column collapsed', !!columnWithTitle('Smoke list') && columnWithTitle('Smoke list').classList.contains('collapsed'));
             smokeList = columnWithTitle('Smoke list');
             if (smokeList) smokeList.querySelector('[data-action="collapse"]').click();
             smokeList = columnWithTitle('Smoke list');
@@ -242,8 +257,7 @@
           }
 
           // T9: delete + undo via toast
-          var col1 = bySelAll('.column')[0];
-          var countBefore = columnCards(col1).length;
+          var countBefore = columnCards(bySelAll('.column')[0]).length;
           var target = null;
           cards = bySelAll('.card');
           for (i = 0; i < cards.length; i++) {
@@ -254,10 +268,10 @@
             $('cm-delete').click();
             ok('T9 confirm shown', !$('confirm-modal').hidden);
             $('confirm-yes').click();
-            ok('T9 card deleted', columnCards(col1).length === countBefore - 1, columnCards(col1).length);
+            ok('T9 card deleted', columnCards(bySelAll('.column')[0]).length === countBefore - 1, columnCards(bySelAll('.column')[0]).length);
             ok('T9 toast with undo', !$('toast').hidden && !$('toast-action').hidden && $('toast-action').textContent === 'Undo');
             $('toast-action').click();
-            ok('T9 card restored by undo', columnCards(col1).length === countBefore, columnCards(col1).length);
+            ok('T9 card restored by undo', columnCards(bySelAll('.column')[0]).length === countBefore, columnCards(bySelAll('.column')[0]).length);
           } else {
             ok('T9 card deleted', false, 'card not found');
           }
@@ -265,7 +279,7 @@
           // T10: rename board + persistence
           var bn = $('board-name');
           bn.value = 'Renamed Board';
-          fire(bn, 'change');
+          fire(bn, 'input');
           var saved = null;
           try { saved = JSON.parse(localStorage.getItem('kanban.board.v1')); } catch (e) { saved = null; }
           ok('T10 board name saved', !!(saved && saved.name === 'Renamed Board'), saved && saved.name);
