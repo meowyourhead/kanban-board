@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <title>smoke</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script>
+    window.__errors = [];
+    window.addEventListener('error', function (e) { window.__errors.push(e.message || String(e)); });
+    window.addEventListener('unhandledrejection', function (e) { window.__errors.push('promise: ' + e.reason); });
+  </script>
+</head>
+<body>
+  <div id="app">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo" aria-hidden="true"></span>
+        <input id="board-name" type="text" class="board-name" maxlength="120" placeholder="Board name" aria-label="Board name" spellcheck="false">
+        <span id="stats" class="stats" aria-live="polite"></span>
+      </div>
+      <div class="search-box" role="search">
+        <input id="search" type="text" placeholder="Search cards   /" aria-label="Search cards" spellcheck="false">
+        <button id="search-clear" class="icon-btn" type="button" aria-label="Clear search" style="display:none"></button>
+      </div>
+      <div class="topbar-right">
+        <button id="btn-add-list" class="btn" type="button">+ Add list</button>
+        <button id="btn-theme" class="icon-btn" type="button" aria-label="Toggle theme"></button>
+        <button id="btn-export" class="icon-btn" type="button" aria-label="Export board"></button>
+        <button id="btn-import" class="icon-btn" type="button" aria-label="Import board"></button>
+        <button id="btn-reset" class="icon-btn" type="button" aria-label="Reset board"></button>
+        <button id="btn-help" class="icon-btn help-btn" type="button" aria-label="Help">?</button>
+      </div>
+    </header>
+
+    <main id="board" class="board" aria-label="Kanban board">
+      <div id="columns" class="columns"></div>
+    </main>
+
+  </div>
+
+  <div id="card-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel card-panel" role="dialog" aria-modal="true" aria-label="Card details">
+      <div class="modal-head">
+        <input id="cm-title" type="text" class="cm-title" placeholder="Card title" maxlength="300" aria-label="Card title">
+        <button id="cm-close" class="icon-btn" type="button" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <textarea id="cm-desc" rows="4" placeholder="Add a description…" aria-label="Description"></textarea>
+        <div class="cm-grid">
+          <label class="cm-field"><span>Priority</span>
+            <select id="cm-priority"><option value="0">Low</option><option value="1" selected>Medium</option><option value="2">High</option><option value="3">Urgent</option></select>
+          </label>
+          <label class="cm-field"><span>Due date</span><input id="cm-due" type="date" aria-label="Due date"></label>
+          <label class="cm-field"><span>Assignee</span><input id="cm-assignee" type="text" placeholder="Who's on it?" maxlength="60" aria-label="Assignee"></label>
+        </div>
+        <section class="cm-section">
+          <h4>Labels</h4>
+          <div id="cm-labels" class="cm-labels"></div>
+          <div class="cm-row-input">
+            <input id="cm-new-label-name" type="text" placeholder="New label name" maxlength="40" aria-label="New label name">
+            <input id="cm-new-label-color" type="color" value="#3e63dd" title="Label color" aria-label="Label color">
+            <button id="cm-add-label" class="btn" type="button">Add</button>
+          </div>
+        </section>
+        <section class="cm-section">
+          <h4>Checklist <span id="cm-progress-text" class="cm-progress-text"></span></h4>
+          <div id="cm-progress-bar" class="cm-progress-bar"><span></span></div>
+          <ul id="cm-checklist" class="cm-checklist"></ul>
+          <div class="cm-row-input">
+            <input id="cm-new-item" type="text" placeholder="Add an item" maxlength="300" aria-label="New checklist item">
+            <button id="cm-add-item" class="btn" type="button">Add</button>
+          </div>
+        </section>
+      </div>
+      <div class="modal-foot">
+        <span id="cm-meta" class="cm-meta"></span>
+        <button id="cm-delete" class="btn danger" type="button">Delete card</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel confirm-panel" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+      <h3 id="confirm-title">Are you sure?</h3>
+      <p id="confirm-message" class="confirm-message"></p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="btn" type="button">Cancel</button>
+        <button id="confirm-yes" class="btn danger" type="button">Yes, do it</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="help-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-help></div>
+    <div class="modal-panel help-panel" role="dialog" aria-modal="true" aria-label="Shortcuts and help">
+      <div class="modal-head"><h3>Shortcuts &amp; help</h3><button class="icon-btn" type="button" data-close-help aria-label="Close"></button></div>
+      <div class="modal-body"><dl class="help-list"><dt>/</dt><dd>Focus search</dd></dl></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden role="status" aria-live="polite">
+    <span id="toast-msg"></span>
+    <button id="toast-action" class="toast-action" type="button" hidden></button>
+  </div>
+
+  <input type="file" id="import-file" accept=".json,application/json" hidden>
+
+  <pre id="report" style="white-space:pre-wrap;padding:16px;font-family:monospace"></pre>
+
+  <script src="../vendor/Sortable.min.js"></script>
+  <script src="../js/state.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    (function () {
+      var results = [];
+
+      function ok(name, cond, extra) {
+        results.push((cond ? 'PASS' : 'FAIL') + '  ' + name + (extra ? '  [' + extra + ']' : ''));
+      }
+
+      function $(id) { return document.getElementById(id); }
+      function bySel(sel) { return document.querySelector(sel); }
+      function bySelAll(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+      function fire(el, type, opts) {
+        var Ev = (type === 'keydown' || type === 'keyup') ? KeyboardEvent : Event;
+        el.dispatchEvent(new Ev(type, Object.assign({ bubbles: true, cancelable: true }, opts || {})));
+      }
+      function columnCards(colEl) { return Array.prototype.slice.call(colEl.querySelectorAll('.card')); }
+      function columnWithTitle(title) {
+        var cols = bySelAll('.column');
+        for (var i = 0; i < cols.length; i++) {
+          var h = cols[i].querySelector('.column-title');
+          if (h && h.textContent === title) return cols[i];
+        }
+        return null;
+      }
+
+      function run() {
+        try {
+          // T1: initial render
+          ok('T1 initial: 3 columns', bySelAll('.column').length === 3, bySelAll('.column').length);
+          ok('T1 initial: 1 card', bySelAll('.card').length === 1, bySelAll('.card').length);
+          ok('T1 initial: stats', $('stats').textContent === '1 card', $('stats').textContent);
+          ok('T1 initial: welcome card', !!bySel('.card .card-title'));
+
+          // T2: quick-add a card
+          bySel('.column [data-action="add-card"]').click();
+          var qa = $('quick-add-text');
+          ok('T2 quick-add composer visible', !!qa);
+          if (qa) {
+            qa.value = 'Smoke test card XYZ';
+            fire(qa, 'input');
+            fire(qa, 'keydown', { key: 'Enter' });
+          }
+          var firstCol = bySelAll('.column')[0];
+          ok('T2 quick-add: card added', columnCards(firstCol).length === 2, columnCards(firstCol).length);
+          ok('T2 quick-add: card visible', !!bySel('.card-title') && document.body.textContent.indexOf('Smoke test card XYZ') !== -1);
+
+          // T3: add a list
+          $('btn-add-list').click();
+          var nl = $('new-list-name');
+          ok('T3 list composer visible', !!nl);
+          if (nl) {
+            nl.value = 'Smoke list';
+            fire(nl, 'keydown', { key: 'Enter' });
+          }
+          ok('T3 list added (4 columns)', bySelAll('.column').length === 4, bySelAll('.column').length);
+          ok('T3 list titled', !!columnWithTitle('Smoke list'));
+
+          // T4: open modal, edit, checklist
+          var smokeCardEl = null;
+          var cards = bySelAll('.card');
+          for (var i = 0; i < cards.length; i++) {
+            if (cards[i].textContent.indexOf('Smoke test card XYZ') !== -1) smokeCardEl = cards[i];
+          }
+          ok('T4 smoke card found in DOM', !!smokeCardEl);
+          if (smokeCardEl) smokeCardEl.click();
+          ok('T4 modal open', !$('card-modal').hidden);
+          $('cm-title').value = 'Smoke test card XYZ (renamed)';
+          $('cm-desc').value = 'smoke description text';
+          $('cm-priority').value = '3';
+          $('cm-due').value = '2020-01-01';
+          $('cm-assignee').value = 'tester';
+          var ni = $('cm-new-item');
+          ni.value = 'step one';
+          fire(ni, 'keydown', { key: 'Enter' });
+          ok('T4 checklist item added', bySelAll('#cm-checklist .cl-row').length === 1, bySelAll('#cm-checklist .cl-row').length);
+          var cb = bySel('#cm-checklist input[type="checkbox"]');
+          if (cb) cb.click();
+          ok('T4 checklist item checked', !!bySel('#cm-checklist .cl-item.done'));
+          $('cm-close').click();
+          ok('T4 modal closed', $('card-modal').hidden);
+          ok('T4 title saved', document.body.textContent.indexOf('Smoke test card XYZ (renamed)') !== -1);
+
+          // T5: overdue meta visible (due 2020)
+          var renamedCard = null;
+          cards = bySelAll('.card');
+          for (i = 0; i < cards.length; i++) {
+            if (cards[i].textContent.indexOf('Smoke test card XYZ (renamed)') !== -1) renamedCard = cards[i];
+          }
+          ok('T5 overdue meta shown', renamedCard && !!renamedCard.querySelector('.meta.due.overdue'));
+
+          // T6: search
+          var s = $('search');
+          s.value = 'Smoke test card XYZ (renamed)';
+          fire(s, 'input');
+          var welcomeHidden = false, smokeShown = true;
+          cards = bySelAll('.card');
+          for (i = 0; i < cards.length; i++) {
+            var isWelcome = cards[i].textContent.indexOf('Welcome to your Kanban board') !== -1;
+            if (isWelcome) welcomeHidden = cards[i].classList.contains('hidden');
+            else if (cards[i].textContent.indexOf('Smoke test card') !== -1) smokeShown = !cards[i].classList.contains('hidden');
+          }
+          ok('T6 search hides non-matches', welcomeHidden);
+          ok('T6 search shows match', smokeShown);
+          s.value = '';
+          fire(s, 'input');
+          ok('T6 search cleared', bySel('.card').classList.contains('hidden') === false);
+
+          // T7: theme toggle + persistence
+          var before = document.documentElement.getAttribute('data-theme');
+          $('btn-theme').click();
+          var after = document.documentElement.getAttribute('data-theme');
+          ok('T7 theme flipped', before !== after, before + ' -> ' + after);
+          ok('T7 theme persisted', !!localStorage.getItem('kanban.theme.v1'));
+
+          // T8: collapse / expand
+          var smokeList = columnWithTitle('Smoke list');
+          if (smokeList) {
+            smokeList.querySelector('[data-action="collapse"]').click();
+            ok('T8 column collapsed', smokeList.classList.contains('collapsed'));
+            smokeList = columnWithTitle('Smoke list');
+            if (smokeList) smokeList.querySelector('[data-action="collapse"]').click();
+            smokeList = columnWithTitle('Smoke list');
+            ok('T8 column re-expanded', smokeList && !smokeList.classList.contains('collapsed'));
+          } else {
+            ok('T8 column collapsed', false, 'smoke list not found');
+            ok('T8 column re-expanded', false, 'smoke list not found');
+          }
+
+          // T9: delete + undo via toast
+          var col1 = bySelAll('.column')[0];
+          var countBefore = columnCards(col1).length;
+          var target = null;
+          cards = bySelAll('.card');
+          for (i = 0; i < cards.length; i++) {
+            if (cards[i].textContent.indexOf('Smoke test card XYZ (renamed)') !== -1) target = cards[i];
+          }
+          if (target) {
+            target.click();
+            $('cm-delete').click();
+            ok('T9 confirm shown', !$('confirm-modal').hidden);
+            $('confirm-yes').click();
+            ok('T9 card deleted', columnCards(col1).length === countBefore - 1, columnCards(col1).length);
+            ok('T9 toast with undo', !$('toast').hidden && !$('toast-action').hidden && $('toast-action').textContent === 'Undo');
+            $('toast-action').click();
+            ok('T9 card restored by undo', columnCards(col1).length === countBefore, columnCards(col1).length);
+          } else {
+            ok('T9 card deleted', false, 'card not found');
+          }
+
+          // T10: rename board + persistence
+          var bn = $('board-name');
+          bn.value = 'Renamed Board';
+          fire(bn, 'change');
+          var saved = null;
+          try { saved = JSON.parse(localStorage.getItem('kanban.board.v1')); } catch (e) { saved = null; }
+          ok('T10 board name saved', !!(saved && saved.name === 'Renamed Board'), saved && saved.name);
+          ok('T10 4 columns saved', !!(saved && saved.columns.length === 4), saved && saved.columns.length);
+          var renamedSaved = false;
+          if (saved) {
+            for (i = 0; i < saved.columns.length; i++) {
+              var cs = saved.columns[i].cards || [];
+              for (var j = 0; j < cs.length; j++) {
+                if (saved.cards[cs[j]] && saved.cards[cs[j]].title.indexOf('Smoke test card XYZ (renamed)') !== -1) renamedSaved = true;
+              }
+            }
+          }
+          ok('T10 edited card saved', renamedSaved);
+
+          // T11: no runtime errors
+          ok('T11 no JS errors', window.__errors.length === 0, window.__errors.join('; '));
+        } catch (err) {
+          ok('UNCAUGHT', false, String(err && err.stack || err));
+        }
+
+        $('report').textContent = 'SMOKE REPORT\n' + results.join('\n') + '\n' +
+          (results.some(function (r) { return r.indexOf('FAIL') === 0; }) ? 'RESULT: FAIL' : 'RESULT: OK');
+        document.title = results.some(function (r) { return r.indexOf('FAIL') === 0; }) ? 'SMOKE-FAIL' : 'SMOKE-OK';
+      }
+
+      if (document.readyState === 'complete') setTimeout(run, 30);
+      else window.addEventListener('load', function () { setTimeout(run, 30); });
+    })();
+  </script>
+</body>
+</html>

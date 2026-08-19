@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A lightweight, offline Kanban board. All data stays in your browser.">
+  <meta name="color-scheme" content="light dark">
+  <title>Kanban</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='5.5' height='14' rx='1.2' fill='%233e63dd'/%3E%3Crect x='9.5' y='1' width='5.5' height='9' rx='1.2' fill='%239aa4b0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 16 16"><rect x="1" y="1" width="5.5" height="14" rx="1.2" fill="currentColor" opacity=".9"/><rect x="9.5" y="1" width="5.5" height="9" rx="1.2" fill="currentColor" opacity=".45"/></svg>
+        </span>
+        <input id="board-name" type="text" class="board-name" maxlength="120" placeholder="Board name" aria-label="Board name" spellcheck="false">
+        <span id="stats" class="stats" aria-live="polite"></span>
+      </div>
+
+      <div class="search-box" role="search">
+        <span class="search-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+        </span>
+        <input id="search" type="text" placeholder="Search cards   /" aria-label="Search cards" spellcheck="false">
+        <button id="search-clear" class="icon-btn" type="button" title="Clear search" aria-label="Clear search" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
+      </div>
+
+      <div class="topbar-right">
+        <button id="btn-add-list" class="btn" type="button">+ Add list</button>
+        <button id="btn-theme" class="icon-btn" type="button" title="Switch to dark mode" aria-label="Toggle theme"></button>
+        <button id="btn-export" class="icon-btn" type="button" title="Export board as JSON" aria-label="Export board">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M5 7.5L8 10.5l3-3M3 13.5h10"/></svg>
+        </button>
+        <button id="btn-import" class="icon-btn" type="button" title="Import board from JSON" aria-label="Import board">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10.5V2.5M5 5l3-3 3 3M3 13.5h10"/></svg>
+        </button>
+        <button id="btn-reset" class="icon-btn" type="button" title="Reset board" aria-label="Reset board">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 8a5.2 5.2 0 1 0 1.5-3.7L2.8 5.9"/><path d="M2.8 2.6v3.3h3.3"/></svg>
+        </button>
+        <button id="btn-help" class="icon-btn help-btn" type="button" title="Shortcuts &amp; help" aria-label="Help">?</button>
+      </div>
+    </header>
+
+    <main id="board" class="board" aria-label="Kanban board">
+      <div id="columns" class="columns"></div>
+    </main>
+
+  </div>
+
+  <!-- Card detail modal -->
+  <div id="card-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel card-panel" role="dialog" aria-modal="true" aria-label="Card details">
+      <div class="modal-head">
+        <input id="cm-title" type="text" class="cm-title" placeholder="Card title" maxlength="300" aria-label="Card title">
+        <button id="cm-close" class="icon-btn" type="button" title="Close" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <textarea id="cm-desc" rows="4" placeholder="Add a description…" aria-label="Description"></textarea>
+
+        <div class="cm-grid">
+          <label class="cm-field">
+            <span>Priority</span>
+            <select id="cm-priority">
+              <option value="0">Low</option>
+              <option value="1" selected>Medium</option>
+              <option value="2">High</option>
+              <option value="3">Urgent</option>
+            </select>
+          </label>
+          <label class="cm-field">
+            <span>Due date</span>
+            <input id="cm-due" type="date" aria-label="Due date">
+          </label>
+          <label class="cm-field">
+            <span>Assignee</span>
+            <input id="cm-assignee" type="text" placeholder="Who's on it?" maxlength="60" aria-label="Assignee">
+          </label>
+        </div>
+
+        <section class="cm-section">
+          <h4>Labels</h4>
+          <div id="cm-labels" class="cm-labels"></div>
+          <div class="cm-row-input">
+            <input id="cm-new-label-name" type="text" placeholder="New label name" maxlength="40" aria-label="New label name">
+            <input id="cm-new-label-color" type="color" value="#3e63dd" title="Label color" aria-label="Label color">
+            <button id="cm-add-label" class="btn" type="button">Add</button>
+          </div>
+        </section>
+
+        <section class="cm-section">
+          <h4>Checklist <span id="cm-progress-text" class="cm-progress-text"></span></h4>
+          <div id="cm-progress-bar" class="cm-progress-bar"><span></span></div>
+          <ul id="cm-checklist" class="cm-checklist"></ul>
+          <div class="cm-row-input">
+            <input id="cm-new-item" type="text" placeholder="Add an item" maxlength="300" aria-label="New checklist item">
+            <button id="cm-add-item" class="btn" type="button">Add</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal-foot">
+        <span id="cm-meta" class="cm-meta"></span>
+        <button id="cm-delete" class="btn danger" type="button">Delete card</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div id="confirm-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel confirm-panel" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+      <h3 id="confirm-title">Are you sure?</h3>
+      <p id="confirm-message" class="confirm-message"></p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="btn" type="button">Cancel</button>
+        <button id="confirm-yes" class="btn danger" type="button">Yes, do it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help modal -->
+  <div id="help-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-help></div>
+    <div class="modal-panel help-panel" role="dialog" aria-modal="true" aria-label="Shortcuts and help">
+      <div class="modal-head">
+        <h3>Shortcuts &amp; help</h3>
+        <button class="icon-btn" type="button" data-close-help title="Close" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <dl class="help-list">
+          <dt>/ or Ctrl+K</dt><dd>Focus search</dd>
+          <dt>N</dt><dd>New card in the first list</dd>
+          <dt>L</dt><dd>Add a new list</dd>
+          <dt>Ctrl+Z</dt><dd>Undo last delete / clear / reset</dd>
+          <dt>Esc</dt><dd>Close dialogs, cancel composers</dd>
+        </dl>
+        <p class="muted help-note">
+          Everything is stored locally in your browser (localStorage) — nothing leaves this computer.
+          Use <strong>Export</strong> in the toolbar to keep a backup or move the board elsewhere.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" hidden role="status" aria-live="polite">
+    <span id="toast-msg"></span>
+    <button id="toast-action" class="toast-action" type="button" hidden></button>
+  </div>
+
+  <input type="file" id="import-file" accept=".json,application/json" hidden>
+
+  <script src="vendor/Sortable.min.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
