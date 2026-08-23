@@ -1,6 +1,7 @@
 /* ==========================================================================
    Kanban board — styles.css
-   Minimalist, dependency-free, light/dark themes. No web fonts, no icon fonts.
+   Minimalist, dependency-free, five themes (light / dark / sticky / blueprint / factory).
+   No web fonts, no icon fonts.
    ========================================================================== */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -58,6 +59,85 @@
   --scrim: rgba(0, 0, 0, 0.55);
   --toast-bg: #e7eaee;
   --toast-text: #171b21;
+}
+
+/* sticky — "The Wall": workshop corkboard, paper columns, post-it cards */
+[data-theme="sticky"] {
+  --bg: #e8eae1;            /* office wall */
+  --surface: #fdfcf6;       /* pinned paper sheet */
+  --surface-2: #fce96c;     /* post-it note */
+  --border: #d9d5c2;
+  --border-strong: #b8b29a;
+  --text: #37342a;          /* ink */
+  --text-2: #6d6857;
+  --text-3: #9a947d;
+  --accent: #2b4fd8;        /* blue ballpoint */
+  --accent-soft: rgba(43, 79, 216, 0.12);
+  --accent-contrast: #ffffff;
+  --danger: #d92d20;        /* red pen */
+  --danger-soft: rgba(217, 45, 32, 0.12);
+  --warning: #dc6803;       /* orange highlighter */
+  --ok: #1a7f37;            /* green marker */
+  --shadow-sm: 0 1px 2px rgba(90, 80, 40, 0.14);
+  --shadow-md: 0 3px 8px rgba(90, 80, 40, 0.16);
+  --shadow-lg: 0 14px 34px rgba(70, 62, 30, 0.28);
+  --scrim: rgba(60, 55, 35, 0.42);
+  --toast-bg: #37342a;
+  --toast-text: #fdfcf6;
+  --font-hand: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive;
+  --sticky-fold: #e0c94f;   /* back of a folded note */
+}
+
+/* blueprint — "Drafting Table": Prussian field, white construction lines */
+[data-theme="blueprint"] {
+  --bg: #0b2a5c;            /* prussian field */
+  --surface: #113672;       /* sheet blue */
+  --surface-2: #184390;     /* card panel */
+  --border: rgba(205, 225, 255, 0.35);
+  --border-strong: rgba(205, 225, 255, 0.6);
+  --text: #edf3ff;          /* chalk white */
+  --text-2: #b7cbef;
+  --text-3: #7e9bc9;
+  --accent: #ffd23f;        /* drafting yellow */
+  --accent-soft: rgba(255, 210, 63, 0.18);
+  --accent-contrast: #14263f;
+  --danger: #ff7b72;
+  --danger-soft: rgba(255, 123, 114, 0.16);
+  --warning: #ffb454;
+  --ok: #5ee0a0;
+  --shadow-sm: 0 1px 2px rgba(2, 10, 28, 0.4);
+  --shadow-md: 0 3px 8px rgba(2, 10, 28, 0.45);
+  --shadow-lg: 0 16px 36px rgba(2, 10, 28, 0.6);
+  --scrim: rgba(3, 12, 30, 0.6);
+  --toast-bg: #edf3ff;
+  --toast-text: #0b2a5c;
+}
+
+/* factory — "Line": concrete floor, safety orange, traveler cards */
+[data-theme="factory"] {
+  --bg: #bdc4cb;            /* concrete */
+  --surface: #eceef0;       /* panel white */
+  --surface-2: #fbfcfd;     /* traveler card */
+  --border: #a5adb6;
+  --border-strong: #87919c;
+  --text: #17191d;          /* machine black */
+  --text-2: #4b535c;
+  --text-3: #767f8a;
+  --accent: #ee5a0b;        /* safety orange */
+  --accent-soft: rgba(238, 90, 11, 0.14);
+  --accent-contrast: #ffffff;
+  --danger: #d92d20;
+  --danger-soft: rgba(217, 45, 32, 0.12);
+  --warning: #c77800;
+  --ok: #2f9e44;
+  --shadow-sm: 0 1px 2px rgba(23, 25, 29, 0.16);
+  --shadow-md: 0 3px 8px rgba(23, 25, 29, 0.18);
+  --shadow-lg: 0 14px 34px rgba(23, 25, 29, 0.32);
+  --scrim: rgba(23, 25, 29, 0.45);
+  --toast-bg: #17191d;
+  --toast-text: #eceef0;
+  --font-condensed: "Arial Narrow", "Avenir Next Condensed", "Roboto Condensed", "Liberation Sans Narrow", sans-serif;
+  --hazard-dark: #23272c;
 }
 
 html, body {
@@ -470,7 +550,75 @@ select { cursor: pointer; }
 .meta.p2 { color: var(--warning); }
 .meta.p3 { color: var(--danger); font-weight: 600; }
 .meta.due.overdue { color: var(--danger); font-weight: 600; }
-.meta.checklist.complete { color: var(--ok); }
+
+/* inline checklist on board cards */
+.card-checklist {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px dashed var(--border);
+}
+.cl-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.cl-head svg { flex: none; }
+.cl-count { white-space: nowrap; }
+.cl-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--border);
+  overflow: hidden;
+}
+.cl-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+.card-checklist.complete .cl-count { color: var(--ok); }
+.card-checklist.complete .cl-bar i { background: var(--ok); }
+.cl-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.card-checklist .cl-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 4px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.card-checklist .cl-row:hover { background: var(--surface); }
+.card-checklist input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  flex: none;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.cl-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-2);
+  overflow-wrap: break-word;
+}
+.card-checklist .cl-row.done .cl-text {
+  text-decoration: line-through;
+  color: var(--text-3);
+}
 
 /* quick add */
 .column-footer { padding: 6px 8px 8px; }
@@ -797,6 +945,154 @@ select { cursor: pointer; }
   border: 2px solid var(--bg);
 }
 .card-list::-webkit-scrollbar-thumb { border-color: var(--surface); }
+
+/* ---------- theme signatures ---------- */
+
+[data-theme="light"], [data-theme="sticky"], [data-theme="factory"] { color-scheme: light; }
+[data-theme="dark"], [data-theme="blueprint"] { color-scheme: dark; }
+
+/* sticky — post-it cards, masking tape, handwriting titles */
+[data-theme="sticky"] .card-title { font-family: var(--font-hand); font-size: 13px; line-height: 1.4; }
+[data-theme="sticky"] .column-title { font-family: var(--font-hand); font-weight: 400; font-size: 14px; }
+[data-theme="sticky"] .card { position: relative; }
+[data-theme="sticky"] .card:nth-child(odd):not(.dragging):not(.drag-chosen) { transform: rotate(-0.5deg); }
+[data-theme="sticky"] .card:nth-child(even):not(.dragging):not(.drag-chosen) { transform: rotate(0.4deg); }
+[data-theme="sticky"] .card:hover:not(.dragging) { transform: rotate(0); }
+[data-theme="sticky"] .card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 13px;
+  height: 13px;
+  border-top-right-radius: inherit;
+  background: linear-gradient(45deg, var(--sticky-fold) 0 50%, var(--surface) 50%);
+}
+[data-theme="sticky"] .column-header { position: relative; }
+[data-theme="sticky"] .column-header::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 64px;
+  height: 18px;
+  transform: translateX(-50%) rotate(-2deg);
+  background: rgba(253, 252, 246, 0.55);
+  border-left: 1px dashed rgba(90, 80, 40, 0.2);
+  border-right: 1px dashed rgba(90, 80, 40, 0.2);
+  box-shadow: 0 1px 2px rgba(90, 80, 40, 0.15);
+}
+
+/* blueprint — drafting grid, construction lines, monospace annotations */
+[data-theme="blueprint"] { --font: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
+[data-theme="blueprint"] body {
+  background-image:
+    linear-gradient(rgba(205, 225, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(205, 225, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(205, 225, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(205, 225, 255, 0.09) 1px, transparent 1px);
+  background-size: 10px 10px, 10px 10px, 50px 50px, 50px 50px;
+}
+[data-theme="blueprint"] .card,
+[data-theme="blueprint"] .column,
+[data-theme="blueprint"] .quick-add { border-style: dashed; }
+[data-theme="blueprint"] .topbar { position: relative; border-bottom-width: 2px; }
+[data-theme="blueprint"] .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 1px;
+  background: var(--border);
+}
+[data-theme="blueprint"] .column-title,
+[data-theme="blueprint"] .board-name { text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* factory — hazard stripes, condensed stencil headers */
+[data-theme="factory"] .topbar { position: relative; border-bottom: none; }
+[data-theme="factory"] .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 5px;
+  background: repeating-linear-gradient(-45deg, var(--accent) 0 10px, var(--hazard-dark) 10px 20px);
+}
+[data-theme="factory"] .column-title {
+  font-family: var(--font-condensed);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 14px;
+  font-weight: 700;
+}
+[data-theme="factory"] .board-name { font-family: var(--font-condensed); text-transform: uppercase; letter-spacing: 0.05em; }
+[data-theme="factory"] .column { position: relative; }
+[data-theme="factory"] .column.over-wip::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 6px;
+  border-radius: 9px 9px 0 0;
+  background: repeating-linear-gradient(-45deg, var(--accent) 0 9px, var(--hazard-dark) 9px 18px);
+}
+
+/* ---------- theme picker ---------- */
+
+.theme-wrap { position: relative; display: inline-flex; }
+
+.theme-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 300;
+  width: 218px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+}
+.theme-picker[hidden] { display: none; }
+
+.theme-picker-title {
+  margin: 2px 6px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 8px;
+  font-size: 13px;
+  text-align: left;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.theme-option:hover { background: var(--surface-2); }
+.theme-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.theme-option.active { background: var(--accent-soft); font-weight: 600; }
+.theme-option.active::after { content: "✓"; margin-left: auto; color: var(--accent); font-weight: 700; }
+
+.theme-dots { display: inline-flex; gap: 3px; flex: none; }
+.theme-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+}
 
 /* ---------- responsive ---------- */
 

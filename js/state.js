@@ -14,6 +14,7 @@
 
   var STORAGE_KEY = 'kanban.board.v1';
   var VERSION = 1;
+  var THEMES = ['light', 'dark', 'sticky', 'blueprint', 'factory'];
 
   var PRIORITIES = [
     { value: 0, label: 'Low' },
@@ -93,7 +94,7 @@
     var b = {
       version: VERSION,
       name: isStr(raw.name) ? raw.name : 'My Board',
-      theme: raw.theme === 'dark' ? 'dark' : 'light',
+      theme: THEMES.indexOf(raw.theme) !== -1 ? raw.theme : 'light',
       columns: [],
       cards: {},
       labels: {}
@@ -250,8 +251,9 @@
   }
 
   function setTheme(board, theme) {
+    if (THEMES.indexOf(theme) === -1) return board;
     var b = clone(board);
-    b.theme = theme === 'dark' ? 'dark' : 'light';
+    b.theme = theme;
     return b;
   }
 
@@ -491,6 +493,7 @@
   return {
     STORAGE_KEY: STORAGE_KEY,
     VERSION: VERSION,
+    THEMES: THEMES,
     PRIORITIES: PRIORITIES,
     PALETTE: PALETTE,
     DEFAULT_PRIORITY: DEFAULT_PRIORITY,

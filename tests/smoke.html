@@ -25,7 +25,17 @@
       </div>
       <div class="topbar-right">
         <button id="btn-add-list" class="btn" type="button">+ Add list</button>
-        <button id="btn-theme" class="icon-btn" type="button" aria-label="Toggle theme"></button>
+        <span class="theme-wrap">
+          <button id="btn-theme" class="icon-btn" type="button" aria-label="Choose theme"></button>
+          <div id="theme-picker" class="theme-picker" hidden role="group" aria-label="Board themes">
+            <p class="theme-picker-title">Theme</p>
+            <button type="button" class="theme-option" data-theme-name="light" aria-pressed="false"><span class="theme-dots"></span>Light</button>
+            <button type="button" class="theme-option" data-theme-name="dark" aria-pressed="false"><span class="theme-dots"></span>Dark</button>
+            <button type="button" class="theme-option" data-theme-name="sticky" aria-pressed="false"><span class="theme-dots"></span>Sticky notes</button>
+            <button type="button" class="theme-option" data-theme-name="blueprint" aria-pressed="false"><span class="theme-dots"></span>Blueprint</button>
+            <button type="button" class="theme-option" data-theme-name="factory" aria-pressed="false"><span class="theme-dots"></span>Factory</button>
+          </div>
+        </span>
         <button id="btn-export" class="icon-btn" type="button" aria-label="Export board"></button>
         <button id="btn-import" class="icon-btn" type="button" aria-label="Import board"></button>
         <button id="btn-reset" class="icon-btn" type="button" aria-label="Reset board"></button>
@@ -217,6 +227,43 @@
           }
           ok('T5 overdue meta shown', renamedCard && !!renamedCard.querySelector('.meta.due.overdue'));
 
+          // T12: checklist visible on board cards + in-place toggle
+          var clCard = null;
+          cards = bySelAll('.card');
+          for (i = 0; i < cards.length; i++) {
+            if (cards[i].textContent.indexOf('Smoke test card XYZ (renamed)') !== -1) clCard = cards[i];
+          }
+          ok('T12a checklist visible on card', !!clCard && !!clCard.querySelector('.card-checklist'));
+          var boardCb = clCard ? clCard.querySelector('.card-checklist input[type="checkbox"]') : null;
+          ok('T12b item state mirrored (checked)', !!boardCb && boardCb.checked === true);
+          if (boardCb) boardCb.click();
+          var savedDone = null;
+          try {
+            var sb = JSON.parse(localStorage.getItem('kanban.board.v1'));
+            for (var k in sb.cards) {
+              if (sb.cards[k].title.indexOf('(renamed)') !== -1 && sb.cards[k].checklist.length) savedDone = sb.cards[k].checklist[0].done;
+            }
+          } catch (e) {}
+          ok('T12c board toggle persists', savedDone === false, String(savedDone));
+          clCard = null;
+          cards = bySelAll('.card');
+          for (i = 0; i < cards.length; i++) {
+            if (cards[i].textContent.indexOf('Smoke test card XYZ (renamed)') !== -1) clCard = cards[i];
+          }
+          ok('T12d count updated to 0/1', !!clCard && clCard.querySelector('.cl-count').textContent === '0/1');
+          var clRowEl = clCard ? clCard.querySelector('.card-checklist .cl-row') : null;
+          if (clRowEl) {
+            var txt = clRowEl.querySelector('.cl-text');
+            if (txt) txt.click();
+          }
+          var clCard3 = null;
+          cards = bySelAll('.card');
+          for (i = 0; i < cards.length; i++) {
+            if (cards[i].textContent.indexOf('Smoke test card XYZ (renamed)') !== -1) clCard3 = cards[i];
+          }
+          var cb3 = clCard3 ? clCard3.querySelector('.card-checklist input[type="checkbox"]') : null;
+          ok('T12e row click toggles back on', !!cb3 && cb3.checked === true);
+
           // T6: search (non-matches are filtered out of the DOM)
           var s = $('search');
           s.value = 'Smoke test card XYZ (renamed)';
@@ -233,14 +280,24 @@
           fire(s, 'input');
           ok('T6 search cleared', bySelAll('.card').length === 2, bySelAll('.card').length);
 
-          // T7: theme toggle + persistence
-          var before = document.documentElement.getAttribute('data-theme');
+          // T7: theme picker + persistence
+          var picker = $('theme-picker');
+          ok('T7a picker starts closed', picker.hidden === true && $('btn-theme').getAttribute('aria-expanded') === 'false');
           $('btn-theme').click();
-          var after = document.documentElement.getAttribute('data-theme');
-          ok('T7 theme flipped', before !== after, before + ' -> ' + after);
+          ok('T7b picker opens', picker.hidden === false && $('btn-theme').getAttribute('aria-expanded') === 'true');
+          var colBefore = bySel('.column');
+          var darkOpt = picker.querySelector('[data-theme-name="dark"]');
+          if (darkOpt) darkOpt.click();
           var themeSaved = null;
           try { themeSaved = JSON.parse(localStorage.getItem('kanban.board.v1')).theme; } catch (e) { themeSaved = null; }
-          ok('T7 theme persisted', themeSaved === after, themeSaved);
+          ok('T7c theme applies + persists', document.documentElement.getAttribute('data-theme') === 'dark' && themeSaved === 'dark', themeSaved);
+          ok('T7c2 theme pick does not rebuild board DOM', bySel('.column') === colBefore);
+          $('btn-theme').click(); // reopen
+          var activeOpt = picker.querySelector('.theme-option.active');
+          ok('T7d active option marked', !!activeOpt && activeOpt.getAttribute('data-theme-name') === 'dark');
+          var lightOpt = picker.querySelector('[data-theme-name="light"]');
+          if (lightOpt) lightOpt.click();
+          ok('T7e back to light + closed', document.documentElement.getAttribute('data-theme') === 'light' && picker.hidden === true);
 
           // T8: collapse / expand
           var smokeList = columnWithTitle('Smoke list');

@@ -48,8 +48,7 @@
   var ICONS = {
     chevron: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>',
     dots: '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="13" cy="8" r="1.4"/></svg>',
-    sun: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M12.8 3.2l-1.4 1.4M4.6 11.4l-1.4 1.4"/></svg>',
-    moon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 9.8A5.5 5.5 0 0 1 6.2 2.5a5.5 5.5 0 1 0 7.3 7.3z"/></svg>',
+    palette: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2a6 6 0 1 0 .3 12c1.4-.1 1.7-1.2 1.2-2.1-.5-1 .1-2.1 1.3-2.1H13a2.5 2.5 0 0 0 2.5-2.6C15.4 4.4 12 2 8 2z"/><circle cx="5" cy="6" r=".9" fill="currentColor" stroke="none"/><circle cx="8.3" cy="4.7" r=".9" fill="currentColor" stroke="none"/><circle cx="11.4" cy="6.2" r=".9" fill="currentColor" stroke="none"/></svg>',
     download: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M5 7.5L8 10.5l3-3M3 13.5h10"/></svg>',
     upload: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10.5V2.5M5 5l3-3 3 3M3 13.5h10"/></svg>',
     reset: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 8a5.2 5.2 0 1 0 1.5-3.7L2.8 5.9"/><path d="M2.8 2.6v3.3h3.3"/></svg>',
@@ -70,6 +69,7 @@
     quickAddColumnId: null,
     addingList: false,
     menuColumnId: null,
+    themePickerOpen: false,
     focusComposer: null, // 'quick' | 'list' | null — consumed by renderBoard
     undoSnapshot: null,
     sortable: [],
@@ -103,12 +103,38 @@
 
   function renderTheme() {
     document.documentElement.setAttribute('data-theme', App.board.theme);
+
     var btn = $('#btn-theme');
     if (btn) {
-      btn.innerHTML = App.board.theme === 'dark' ? ICONS.sun : ICONS.moon;
-      btn.title = App.board.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+      btn.innerHTML = ICONS.palette;
+      btn.title = 'Change theme (current: ' + App.board.theme + ')';
       btn.setAttribute('aria-label', btn.title);
+      btn.setAttribute('aria-expanded', App.themePickerOpen ? 'true' : 'false');
     }
+
+    var picker = $('#theme-picker');
+    if (picker) {
+      picker.hidden = !App.themePickerOpen;
+      $$('#theme-picker .theme-option').forEach(function (opt) {
+        var on = opt.getAttribute('data-theme-name') === App.board.theme;
+        opt.classList.toggle('active', on);
+        opt.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+  }
+
+  function openThemePicker() {
+    App.themePickerOpen = true;
+    renderTheme();
+    var active = $('#theme-picker .theme-option.active') || $('#theme-picker .theme-option');
+    if (active) active.focus();
+  }
+
+  function closeThemePicker(focusBtn) {
+    if (!App.themePickerOpen) return;
+    App.themePickerOpen = false;
+    renderTheme();
+    if (focusBtn !== false) { var b = $('#btn-theme'); if (b) b.focus(); }
   }
 
   function renderTopbar() {
@@ -156,12 +182,25 @@
       meta += '<span class="meta due' + (overdue ? ' overdue' : '') + '" title="Due ' + esc(card.dueDate) + '">' + ICONS.calendar + ' ' + esc(formatDue(card.dueDate)) + (overdue ? ' · overdue' : '') + '</span>';
     }
     if (card.assignee) meta += '<span class="meta assignee" title="Assignee">' + ICONS.user + ' ' + esc(card.assignee) + '</span>';
-    if (prog.total > 0) meta += '<span class="meta checklist' + (prog.pct === 100 ? ' complete' : '') + '">' + ICONS.check + ' ' + prog.done + '/' + prog.total + '</span>';
 
-    return '<li class="card" data-card-id="' + card.id + '" tabindex="0" role="button" aria-label="Open card: ' + esc(card.title) + '">' +
+    var checklist = '';
+    if (prog.total > 0) {
+      var items = card.checklist.map(function (i) {
+        return '<li class="cl-row' + (i.done ? ' done' : '') + '" data-item="' + i.id + '">' +
+          '<input type="checkbox" data-item="' + i.id + '"' + (i.done ? ' checked' : '') + ' aria-label="' + esc(i.text) + '">' +
+          '<span class="cl-text">' + esc(i.text) + '</span></li>';
+      }).join('');
+      checklist = '<div class="card-checklist' + (prog.pct === 100 ? ' complete' : '') + '" aria-label="Checklist: ' + prog.done + ' of ' + prog.total + ' done">' +
+        '<div class="cl-head">' + ICONS.check + '<span class="cl-count">' + prog.done + '/' + prog.total + '</span>' +
+        '<span class="cl-bar"><i style="width:' + prog.pct + '%"></i></span></div>' +
+        '<ul class="cl-items">' + items + '</ul></div>';
+    }
+
+    return '<li class="card" data-card-id="' + card.id + '" tabindex="0" aria-label="Open card: ' + esc(card.title) + '">' +
       (labels ? '<div class="card-labels">' + labels + '</div>' : '') +
       '<h3 class="card-title">' + esc(card.title) + '</h3>' +
       (meta ? '<div class="card-meta">' + meta + '</div>' : '') +
+      checklist +
       '</li>';
   }
 
@@ -283,6 +322,7 @@
     $$('.card-list').forEach(function (list) {
       App.sortable.push(new window.Sortable(list, {
         group: 'cards',
+        filter: '.card-checklist',
         animation: 150,
         ghostClass: 'drag-ghost',
         chosenClass: 'drag-chosen',
@@ -582,6 +622,12 @@
 
   function handleBoardClick(e) {
     if (App.justDragged) return;
+    var clRow = e.target.closest('.card-checklist [data-item]');
+    if (clRow) {
+      var hostCard = clRow.closest('[data-card-id]');
+      if (hostCard) commit(S.toggleChecklistItem(App.board, hostCard.getAttribute('data-card-id'), clRow.getAttribute('data-item')));
+      return;
+    }
     var actionEl = e.target.closest('[data-action]');
 
     if (!actionEl) {
@@ -723,7 +769,7 @@
     var t = e.target;
     if (t && t.closest && t !== $('#board') && t !== $('#columns')) {
       var cardEl = t.closest('[data-card-id]');
-      if (cardEl && cardEl.classList.contains('card') && (e.key === 'Enter' || e.key === ' ')) {
+      if (cardEl && cardEl.classList.contains('card') && !t.closest('.card-checklist') && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
         openModal(cardEl.getAttribute('data-card-id'));
         return;
@@ -796,7 +842,7 @@
       withUndo('Board reset', function () {
         S.clearBoard(storage);
         var fresh = S.defaultBoard();
-        fresh.theme = App.board.theme; // keep the light/dark preference
+        fresh.theme = App.board.theme; // keep the theme preference
         return fresh;
       });
       closeModal();
@@ -839,8 +885,28 @@
       renderBoard();
     });
 
-    $('#btn-theme').addEventListener('click', function () {
-      commit(S.setTheme(App.board, App.board.theme === 'dark' ? 'light' : 'dark'), { skipModal: true });
+    var btnTheme = $('#btn-theme');
+    btnTheme.addEventListener('click', function () {
+      if (App.themePickerOpen) closeThemePicker(false);
+      else openThemePicker();
+    });
+
+    $$('#theme-picker .theme-option').forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        var name = this.getAttribute('data-theme-name');
+        App.themePickerOpen = false;
+        // Theme is pure CSS — swap it without rebuilding the board DOM.
+        App.board = S.setTheme(App.board, name);
+        renderTheme();
+        if (!S.saveBoard(storage, App.board)) toast('Could not save — browser storage may be full', null);
+        btnTheme.focus();
+      });
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!App.themePickerOpen) return;
+      var wrap = $('.theme-wrap');
+      if (wrap && e.target && !wrap.contains(e.target)) closeThemePicker(false);
     });
 
     $('#btn-export').addEventListener('click', exportBoard);
@@ -880,6 +946,7 @@
         if (!$('#help-modal').hidden) { $('#help-modal').hidden = true; return; }
         if (!$('#confirm-modal').hidden) { closeConfirm(); return; }
         if (!$('#card-modal').hidden) { closeModal(); return; }
+        if (App.themePickerOpen) { closeThemePicker(true); return; }
         if (App.menuColumnId) { App.menuColumnId = null; renderBoard(); return; }
         if (App.quickAddColumnId) { App.quickAddColumnId = null; renderBoard(); return; }
         if (App.addingList) { App.addingList = false; renderBoard(); return; }

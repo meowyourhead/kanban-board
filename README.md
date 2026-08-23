@@ -21,7 +21,8 @@ Double-click **`index.html`** (Chrome or Edge recommended). That's it.
 - **Search** — filter cards by title, description, assignee, or label name
   (press `/`)
 - **Stats** — live card count, overdue count, and search match count in the toolbar
-- **Light / dark theme** — toggle in the toolbar, preference is saved
+- **Five themes** — Light, Dark, Sticky notes, Blueprint, and Factory; pick one
+  from the toolbar picker, preference is saved
 - **Import / export** — board as a portable JSON file; import replaces the current
   board (with confirmation)
 - **Undo** — delete card / clear list / delete list / reset board can all be undone
@@ -50,7 +51,7 @@ restore, use **Import**.
 
 ```
 index.html              app shell (toolbar, board, modals)
-css/styles.css          design system, light/dark themes
+css/styles.css          design system, five themes (light / dark / sticky / blueprint / factory)
 js/state.js             pure data model + operations (no DOM) — the tested core
 js/app.js               UI layer: rendering, drag & drop, modals, shortcuts
 vendor/Sortable.min.js  vendored drag-and-drop library (Sortable.js)

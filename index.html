@@ -33,7 +33,32 @@
 
       <div class="topbar-right">
         <button id="btn-add-list" class="btn" type="button">+ Add list</button>
-        <button id="btn-theme" class="icon-btn" type="button" title="Switch to dark mode" aria-label="Toggle theme"></button>
+        <span class="theme-wrap">
+          <button id="btn-theme" class="icon-btn" type="button" title="Change theme" aria-label="Choose theme" aria-haspopup="true" aria-expanded="false"></button>
+          <div id="theme-picker" class="theme-picker" hidden role="group" aria-label="Board themes">
+            <p class="theme-picker-title">Theme</p>
+            <button type="button" class="theme-option" data-theme-name="light" aria-pressed="false">
+              <span class="theme-dots"><i style="background:#f6f7f9"></i><i style="background:#ffffff"></i><i style="background:#3e63dd"></i></span>
+              Light
+            </button>
+            <button type="button" class="theme-option" data-theme-name="dark" aria-pressed="false">
+              <span class="theme-dots"><i style="background:#14171c"></i><i style="background:#1d2127"></i><i style="background:#6d8bff"></i></span>
+              Dark
+            </button>
+            <button type="button" class="theme-option" data-theme-name="sticky" aria-pressed="false">
+              <span class="theme-dots"><i style="background:#e8eae1"></i><i style="background:#fce96c"></i><i style="background:#2b4fd8"></i></span>
+              Sticky notes
+            </button>
+            <button type="button" class="theme-option" data-theme-name="blueprint" aria-pressed="false">
+              <span class="theme-dots"><i style="background:#0b2a5c"></i><i style="background:#184390"></i><i style="background:#ffd23f"></i></span>
+              Blueprint
+            </button>
+            <button type="button" class="theme-option" data-theme-name="factory" aria-pressed="false">
+              <span class="theme-dots"><i style="background:#bdc4cb"></i><i style="background:#fbfcfd"></i><i style="background:#ee5a0b"></i></span>
+              Factory
+            </button>
+          </div>
+        </span>
         <button id="btn-export" class="icon-btn" type="button" title="Export board as JSON" aria-label="Export board">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M5 7.5L8 10.5l3-3M3 13.5h10"/></svg>
         </button>
