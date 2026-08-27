@@ -1,6 +1,7 @@
 /* ==========================================================================
    Kanban board — styles.css
-   Minimalist, dependency-free, five themes (light / dark / sticky / blueprint / factory).
+    Minimalist, dependency-free, eight themes
+    (light / dark / sticky / blueprint / factory / cyberpunk / claude / ios-glass).
    No web fonts, no icon fonts.
    ========================================================================== */
 
@@ -138,6 +139,84 @@
   --toast-text: #eceef0;
   --font-condensed: "Arial Narrow", "Avenir Next Condensed", "Roboto Condensed", "Liberation Sans Narrow", sans-serif;
   --hazard-dark: #23272c;
+}
+
+/* cyberpunk — "Neon District": void black, phosphor grid, glowing edges */
+[data-theme="cyberpunk"] {
+  --bg: #0a0a14;            /* void */
+  --surface: #12121f;       /* panel */
+  --surface-2: #1b1b30;     /* card */
+  --border: rgba(0, 255, 213, 0.16);
+  --border-strong: rgba(0, 255, 213, 0.45);
+  --text: #e4fbf4;          /* phosphor white */
+  --text-2: #9aa9bf;
+  --text-3: #5d6b82;
+  --accent: #00ffd5;        /* neon aqua */
+  --accent-soft: rgba(0, 255, 213, 0.14);
+  --accent-contrast: #041019;
+  --danger: #ff3b6b;        /* hot magenta-red */
+  --danger-soft: rgba(255, 59, 107, 0.16);
+  --warning: #ffd60a;       /* acid yellow */
+  --ok: #3dff8b;            /* neon green */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.5), 0 0 12px rgba(0, 255, 213, 0.10);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 255, 213, 0.18);
+  --scrim: rgba(4, 6, 14, 0.72);
+  --toast-bg: #e4fbf4;
+  --toast-text: #0a0a14;
+}
+
+/* claude — "Studio": warm cream paper, terracotta ink, serif display type */
+[data-theme="claude"] {
+  --bg: #f4efe4;            /* warm cream */
+  --surface: #faf7ef;       /* paper */
+  --surface-2: #f2ecdb;     /* card stock */
+  --border: #e4dbc4;
+  --border-strong: #cec0a0;
+  --text: #3b3629;          /* espresso ink */
+  --text-2: #6f6852;
+  --text-3: #a19a80;
+  --accent: #c15f3c;        /* terracotta */
+  --accent-soft: rgba(193, 95, 60, 0.12);
+  --accent-contrast: #fff8f1;
+  --danger: #b8402e;
+  --danger-soft: rgba(184, 64, 46, 0.12);
+  --warning: #ad7c1e;       /* ochre */
+  --ok: #5c7d4c;            /* sage */
+  --shadow-sm: 0 1px 2px rgba(90, 75, 40, 0.10);
+  --shadow-md: 0 3px 8px rgba(90, 75, 40, 0.14);
+  --shadow-lg: 0 16px 36px rgba(70, 58, 30, 0.24);
+  --scrim: rgba(59, 54, 41, 0.42);
+  --toast-bg: #3b3629;
+  --toast-text: #faf7ef;
+  --font-serif: "Iowan Old Style", Georgia, "Palatino Linotype", "Times New Roman", serif;
+}
+
+/* ios-glass — "Liquid Glass": sky gradient, frosted translucent panels */
+[data-theme="ios-glass"] {
+  --bg: #e9edf5;            /* sky base */
+  --surface: rgba(255, 255, 255, 0.48);   /* frosted panel */
+  --surface-2: rgba(255, 255, 255, 0.72); /* card glass */
+  --border: rgba(255, 255, 255, 0.66);    /* glass edge highlight */
+  --border-strong: rgba(96, 118, 160, 0.34);
+  --text: #1c2027;
+  --text-2: #525d70;
+  --text-3: #8b95a7;
+  --accent: #0a84ff;        /* iOS blue */
+  --accent-soft: rgba(10, 132, 255, 0.14);
+  --accent-contrast: #ffffff;
+  --danger: #ff3b30;
+  --danger-soft: rgba(255, 59, 48, 0.12);
+  --warning: #ff9500;
+  --ok: #34c759;
+  --shadow-sm: 0 1px 3px rgba(30, 40, 70, 0.10);
+  --shadow-md: 0 6px 18px rgba(30, 40, 70, 0.14);
+  --shadow-lg: 0 24px 60px rgba(30, 40, 70, 0.25);
+  --scrim: rgba(28, 36, 60, 0.35);
+  --toast-bg: rgba(28, 32, 40, 0.88);
+  --toast-text: #ffffff;
+  --radius: 16px;           /* larger, softer corners */
+  --radius-sm: 10px;
 }
 
 html, body {
@@ -961,8 +1040,9 @@ select { cursor: pointer; }
 
 /* ---------- theme signatures ---------- */
 
-[data-theme="light"], [data-theme="sticky"], [data-theme="factory"] { color-scheme: light; }
-[data-theme="dark"], [data-theme="blueprint"] { color-scheme: dark; }
+[data-theme="light"], [data-theme="sticky"], [data-theme="factory"],
+[data-theme="claude"], [data-theme="ios-glass"] { color-scheme: light; }
+[data-theme="dark"], [data-theme="blueprint"], [data-theme="cyberpunk"] { color-scheme: dark; }
 
 /* sticky — post-it cards, masking tape, handwriting titles */
 [data-theme="sticky"] .card-title { font-family: var(--font-hand); font-size: 13px; line-height: 1.4; }
@@ -1052,6 +1132,69 @@ select { cursor: pointer; }
   border-radius: 9px 9px 0 0;
   background: repeating-linear-gradient(-45deg, var(--accent) 0 9px, var(--hazard-dark) 9px 18px);
 }
+
+/* cyberpunk — phosphor grid, neon glow on hover, glowing topbar rule */
+[data-theme="cyberpunk"] { --font: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
+[data-theme="cyberpunk"] body {
+  background-image:
+    linear-gradient(rgba(0, 255, 213, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 213, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+[data-theme="cyberpunk"] .topbar { position: relative; }
+[data-theme="cyberpunk"] .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent) 35%, #ff3b6b 75%, transparent);
+  box-shadow: 0 0 12px rgba(0, 255, 213, 0.45);
+}
+[data-theme="cyberpunk"] .column-title,
+[data-theme="cyberpunk"] .board-name { text-transform: uppercase; letter-spacing: 0.08em; }
+[data-theme="cyberpunk"] .card:hover:not(.dragging) {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md), 0 0 14px rgba(0, 255, 213, 0.20);
+}
+
+/* claude — serif display type, terracotta rule under the topbar */
+[data-theme="claude"] .column-title { font-family: var(--font-serif); font-size: 14.5px; }
+[data-theme="claude"] .board-name { font-family: var(--font-serif); }
+[data-theme="claude"] .topbar { position: relative; }
+[data-theme="claude"] .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent 75%);
+}
+
+/* ios-glass — sky gradient blobs behind frosted panels */
+[data-theme="ios-glass"] body {
+  background-image:
+    radial-gradient(42% 55% at 12% 8%, rgba(10, 132, 255, 0.20), transparent 70%),
+    radial-gradient(45% 60% at 88% 18%, rgba(191, 90, 242, 0.18), transparent 70%),
+    radial-gradient(50% 65% at 70% 95%, rgba(48, 209, 88, 0.14), transparent 70%);
+  background-attachment: fixed;
+}
+[data-theme="ios-glass"] .topbar,
+[data-theme="ios-glass"] .column,
+[data-theme="ios-glass"] .card,
+[data-theme="ios-glass"] .modal-panel,
+[data-theme="ios-glass"] .theme-picker,
+[data-theme="ios-glass"] .toast {
+  -webkit-backdrop-filter: blur(22px) saturate(1.7);
+  backdrop-filter: blur(22px) saturate(1.7);
+}
+[data-theme="ios-glass"] .modal-backdrop {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+[data-theme="ios-glass"] .search-box { background: rgba(255, 255, 255, 0.35); }
 
 /* ---------- theme picker ---------- */
 

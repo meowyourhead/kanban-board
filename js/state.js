@@ -14,7 +14,7 @@
 
   var STORAGE_KEY = 'kanban.board.v1';
   var VERSION = 1;
-  var THEMES = ['light', 'dark', 'sticky', 'blueprint', 'factory'];
+  var THEMES = ['light', 'dark', 'sticky', 'blueprint', 'factory', 'cyberpunk', 'claude', 'ios-glass'];
 
   var PRIORITIES = [
     { value: 0, label: 'Low' },
