@@ -203,6 +203,19 @@ button { font-family: inherit; }
 .icon-btn:hover { background: var(--surface-2); color: var(--text); }
 .icon-btn svg { flex: none; }
 
+/* Board-file button (File System Access API). The connected state is the only
+   time it gets a persistent visual — auto-save running is worth seeing. */
+#btn-file.connected {
+  background: rgba(94, 224, 160, 0.18);
+  color: var(--ok);
+}
+
+/* Read-only file connection (browsers without the File System Access API). */
+#btn-file.readonly {
+  background: rgba(128, 128, 128, 0.16);
+  color: var(--warning);
+}
+
 .link-btn {
   display: inline-flex;
   align-items: center;
@@ -1042,6 +1055,9 @@ select { cursor: pointer; }
 
 /* ---------- theme picker ---------- */
 
+/* .theme-wrap must create its own stacking context: the open panel is
+   position:absolute and would otherwise be clipped by .topbar's
+   overflow:hidden (which exists for mobile horizontal scrolling). */
 .theme-wrap { position: relative; display: inline-flex; }
 
 .theme-picker {

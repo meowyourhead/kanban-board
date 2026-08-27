@@ -58,7 +58,8 @@
     flag: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14V2.5M4 2.5h8L10.5 5 12 7.5H4"/></svg>',
     user: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="5" r="2.5"/><path d="M3 14a5 5 0 0 1 10 0"/></svg>',
     check: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>',
-    plus: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>'
+    plus: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>',
+    file: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h3L8 4.8h4.5A1.5 1.5 0 0 1 14 6.3v5.2a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5z"/></svg>'
   };
 
   // ---------- app state ----------
@@ -75,9 +76,15 @@
     sortable: [],
     justDragged: false,
     toastTimer: null,
-    confirmCb: null
+    confirmCb: null,
+    confirmNoCb: null,
+    fileHandle: null,
+    fileName: null,
+    fileStatus: 'none' // none | prompt | ok | readonly | error
   };
   window.Kanban = App; // debug / testing hook
+
+  var FILE_HANDLE_KEY = 'kanban.filehandle.v1';
 
   var storage = {
     getItem: function (k) { return window.localStorage.getItem(k); },
@@ -86,11 +93,15 @@
   };
 
   // ---------- commit + render ----------
+  function persist(board) {
+    if (!S.saveBoard(storage, board)) toast('Could not save — browser storage may be full', null);
+    writeBoardFile();
+  }
+
   function commit(board, opts) {
     App.board = board;
     render(opts && opts.skipModal ? { skipModal: true } : null);
-    var ok = S.saveBoard(storage, board);
-    if (!ok) toast('Could not save — browser storage may be full', null);
+    persist(App.board);
   }
 
   function render(opts) {
@@ -106,7 +117,6 @@
 
     var btn = $('#btn-theme');
     if (btn) {
-      btn.innerHTML = ICONS.palette;
       btn.title = 'Change theme (current: ' + App.board.theme + ')';
       btn.setAttribute('aria-label', btn.title);
       btn.setAttribute('aria-expanded', App.themePickerOpen ? 'true' : 'false');
@@ -388,19 +398,253 @@
   }
 
   // ---------- confirm dialog ----------
-  function confirmDialog(opts, onYes) {
+  function confirmDialog(opts, onYes, onNo) {
     $('#confirm-title').textContent = opts.title || 'Are you sure?';
     $('#confirm-message').textContent = opts.message || '';
     var yes = $('#confirm-yes');
     yes.textContent = opts.yesLabel || 'Yes, do it';
     App.confirmCb = onYes;
+    App.confirmNoCb = onNo || null;
     $('#confirm-modal').hidden = false;
     yes.focus();
   }
 
-  function closeConfirm() {
+  function closeConfirm(fireNo) {
+    var noCb = App.confirmNoCb;
     $('#confirm-modal').hidden = true;
     App.confirmCb = null;
+    App.confirmNoCb = null;
+    if (fireNo && noCb) noCb();
+  }
+
+  // ---------- board file (File System Access API — auto-save to a chosen file) ----------
+  var INVALID_FILE = { __invalidBoardFile: true };
+
+  function fileSupported() {
+    return typeof window.showSaveFilePicker === 'function' && typeof window.indexedDB !== 'undefined';
+  }
+
+  function idbOpen() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open('kanban', 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore('handles'); };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error || new Error('indexeddb open failed')); };
+    });
+  }
+
+  function idbPut(key, value) {
+    return idbOpen().then(function (db) {
+      var done = new Promise(function (resolve, reject) {
+        var tx = db.transaction('handles', 'readwrite');
+        tx.objectStore('handles').put(value, key);
+        tx.oncomplete = resolve;
+        tx.onerror = function () { reject(tx.error || new Error('indexeddb put failed')); };
+      });
+      return done.then(function (v) { db.close(); return v; }, function (e) { db.close(); throw e; });
+    });
+  }
+
+  function idbGet(key) {
+    return idbOpen().then(function (db) {
+      var done = new Promise(function (resolve, reject) {
+        var req = db.transaction('handles').objectStore('handles').get(key);
+        req.onsuccess = function () { resolve(req.result || null); };
+        req.onerror = function () { reject(req.error || new Error('indexeddb get failed')); };
+      });
+      return done.then(function (v) { db.close(); return v; }, function (e) { db.close(); throw e; });
+    });
+  }
+
+  function renderFileStatus() {
+    var btn = $('#btn-file');
+    if (!btn) return;
+    btn.classList.toggle('connected', App.fileStatus === 'ok');
+    btn.classList.toggle('readonly', App.fileStatus === 'readonly');
+    btn.title = App.fileStatus === 'ok' ? 'Board file connected — auto-save on. Click to choose a different file.'
+      : App.fileStatus === 'prompt' ? 'Click to reconnect the board file (permission was lost)'
+      : App.fileStatus === 'readonly' ? 'Loaded from ' + (App.fileName || 'file') + ' — read-only, this browser cannot write files. Use Export to save changes. Click to choose another file.'
+      : 'Connect a board file (e.g. in a shared folder) so every change is saved there automatically';
+    btn.setAttribute('aria-label', btn.title);
+  }
+
+  function writeBoardFile() {
+    if (!fileSupported() || !App.fileHandle || App.fileStatus !== 'ok') return;
+    var handle = App.fileHandle;
+    handle.createWritable().then(function (w) {
+      return w.write(JSON.stringify(App.board, null, 2)).then(function () { return w.close(); });
+    }).catch(function (err) {
+      App.fileStatus = 'error';
+      renderFileStatus();
+      toast('Could not save board file: ' + ((err && err.name) || String(err)), null);
+    });
+  }
+
+  function disconnectBoardFile() {
+    App.fileHandle = null;
+    App.fileName = null;
+    App.fileStatus = 'none';
+    renderFileStatus();
+  }
+
+  function adoptBoardFile(handle, isRestore) {
+    if (!handle) return;
+    App.fileHandle = handle;
+    Promise.resolve(handle.queryPermission ? handle.queryPermission({ mode: 'readwrite' }) : 'granted')
+      .catch(function () { return 'prompt'; })
+      .then(function (perm) {
+        if (perm !== 'granted') {
+          App.fileStatus = 'prompt';
+          renderFileStatus();
+          toast('Click the folder icon to reconnect the board file', null);
+          return;
+        }
+        return handle.getFile().then(function (file) {
+          if (!file.size) {
+            App.fileStatus = 'ok';
+            renderFileStatus();
+            writeBoardFile();
+            toast(isRestore ? 'Board file reconnected — auto-save on' : 'Connected to board file — auto-save on', null);
+            return;
+          }
+          return file.text().then(function (text) {
+            var parsed = null;
+            try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+            if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.columns)) throw INVALID_FILE;
+            var incoming = S.normalizeBoard(parsed);
+            if (JSON.stringify(incoming) === JSON.stringify(App.board)) {
+              App.fileStatus = 'ok';
+              renderFileStatus();
+              toast(isRestore ? 'Board file reconnected — auto-save on' : 'Connected to board file — auto-save on', null);
+              return;
+            }
+            confirmDialog({
+              title: 'Load board from file?',
+              message: 'The connected file contains a different board than the one currently open. Load it and replace the current board, or keep the current board (the file will not be touched)?'
+            }, function () {
+              App.board = incoming;
+              render();
+              S.saveBoard(storage, App.board);
+              App.fileStatus = 'ok';
+              renderFileStatus();
+              toast('Loaded board from file', null);
+            }, function () {
+              disconnectBoardFile();
+              toast('Kept current board — file not connected', null);
+            });
+          });
+        });
+      })
+      .catch(function (err) {
+        if (err === INVALID_FILE) {
+          confirmDialog({
+            title: 'Overwrite unreadable file?',
+            message: 'The connected file is not a valid board. Overwrite it with the current board?'
+          }, function () {
+            App.fileStatus = 'ok';
+            renderFileStatus();
+            writeBoardFile();
+          }, function () {
+            disconnectBoardFile();
+            toast('Kept current board — file not connected', null);
+          });
+        } else if (!(err && err.name === 'AbortError')) {
+          App.fileStatus = 'error';
+          renderFileStatus();
+          toast('Could not connect to board file: ' + ((err && err.message) || String(err)), null);
+        }
+      });
+  }
+
+  // Fallback for browsers without the File System Access API (e.g. Brave):
+  // load a board file read-only via a plain <input type="file">; saving is done with Export.
+  function openBoardFileFallback() {
+    var input = $('#board-file-input');
+    if (!input) return;
+    input.value = '';
+    input.onchange = function () {
+      var file = input.files && input.files[0];
+      input.value = '';
+      if (file) loadBoardFileFallback(file);
+    };
+    input.click();
+  }
+
+  function loadBoardFileFallback(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var raw = null;
+      try { raw = JSON.parse(String(reader.result)); } catch (e) { raw = null; }
+      var src = raw && typeof raw === 'object' ? (raw.board || raw) : null;
+      if (!src || !Array.isArray(src.columns)) {
+        toast('That file is not a valid board — nothing loaded', null);
+        return;
+      }
+      var incoming = S.normalizeBoard(src);
+      function connectReadonly() {
+        App.fileStatus = 'readonly';
+        App.fileName = file.name;
+        renderFileStatus();
+        toast('Loaded ' + file.name + ' — this browser cannot write to files, so use Export to save changes', null);
+      }
+      if (JSON.stringify(incoming) === JSON.stringify(App.board)) { connectReadonly(); return; }
+      confirmDialog({
+        title: 'Load board from file?',
+        message: '"' + file.name + '" contains a different board than the one currently open. Load it and replace the current board?'
+      }, function () {
+        App.board = incoming;
+        render();
+        S.saveBoard(storage, App.board);
+        connectReadonly();
+      });
+    };
+    reader.onerror = function () { toast('Could not read that file', null); };
+    reader.readAsText(file);
+  }
+
+  App._loadBoardFileFallback = loadBoardFileFallback; // testing hook
+
+  function openBoardFilePicker() {
+    if (!fileSupported()) {
+      openBoardFileFallback();
+      return;
+    }
+    var name = (App.board.name || 'board').replace(/[\\/:*?"<>|]+/g, '').trim() || 'board';
+    window.showSaveFilePicker({
+      suggestedName: name + '.json',
+      types: [{ description: 'Kanban board', accept: { 'application/json': ['.json'] } }]
+    }).then(function (handle) {
+      return idbPut(FILE_HANDLE_KEY, handle).catch(function () {}).then(function () {
+        adoptBoardFile(handle, false);
+      });
+    }).catch(function (err) {
+      if (!(err && err.name === 'AbortError')) toast('Could not pick a file: ' + ((err && err.message) || String(err)), null);
+    });
+  }
+
+  function restoreBoardFile() {
+    if (!fileSupported()) return;
+    idbGet(FILE_HANDLE_KEY).then(function (handle) {
+      if (handle && handle.queryPermission) adoptBoardFile(handle, true);
+    }).catch(function () {});
+  }
+
+  function onFileButtonClick() {
+    if (!fileSupported()) {
+      openBoardFileFallback();
+      return;
+    }
+    if (App.fileHandle && App.fileStatus !== 'ok') {
+      var handle = App.fileHandle;
+      Promise.resolve(handle.requestPermission ? handle.requestPermission({ mode: 'readwrite' }) : 'granted')
+        .catch(function () { return 'denied'; })
+        .then(function (perm) {
+          if (perm === 'granted') adoptBoardFile(handle, true);
+          else openBoardFilePicker();
+        });
+      return;
+    }
+    openBoardFilePicker();
   }
 
   // ---------- undo (single level, for destructive ops) ----------
@@ -886,6 +1130,11 @@
     });
 
     var btnTheme = $('#btn-theme');
+    // Inject the icon once at init. Re-setting innerHTML on every render would
+    // detach the <svg> that is e.target of an in-flight click, which makes the
+    // outside-click check (wrap.contains(e.target)) fail and instantly closes
+    // the picker — so clicks only registered on the button's corners.
+    btnTheme.innerHTML = ICONS.palette;
     btnTheme.addEventListener('click', function () {
       if (App.themePickerOpen) closeThemePicker(false);
       else openThemePicker();
@@ -898,7 +1147,7 @@
         // Theme is pure CSS — swap it without rebuilding the board DOM.
         App.board = S.setTheme(App.board, name);
         renderTheme();
-        if (!S.saveBoard(storage, App.board)) toast('Could not save — browser storage may be full', null);
+        persist(App.board);
         btnTheme.focus();
       });
     });
@@ -908,6 +1157,13 @@
       var wrap = $('.theme-wrap');
       if (wrap && e.target && !wrap.contains(e.target)) closeThemePicker(false);
     });
+
+    var btnFile = $('#btn-file');
+    if (btnFile) {
+      btnFile.innerHTML = ICONS.file;
+      btnFile.addEventListener('click', onFileButtonClick);
+      renderFileStatus();
+    }
 
     $('#btn-export').addEventListener('click', exportBoard);
     $('#btn-import').addEventListener('click', function () { $('#import-file').click(); });
@@ -925,8 +1181,8 @@
       closeConfirm();
       if (cb) cb();
     });
-    $('#confirm-cancel').addEventListener('click', closeConfirm);
-    $('#confirm-modal .modal-backdrop').addEventListener('click', closeConfirm);
+    $('#confirm-cancel').addEventListener('click', function () { closeConfirm(true); });
+    $('#confirm-modal .modal-backdrop').addEventListener('click', function () { closeConfirm(true); });
   }
 
   function bindHelp() {
@@ -944,7 +1200,7 @@
 
       if (e.key === 'Escape') {
         if (!$('#help-modal').hidden) { $('#help-modal').hidden = true; return; }
-        if (!$('#confirm-modal').hidden) { closeConfirm(); return; }
+        if (!$('#confirm-modal').hidden) { closeConfirm(true); return; }
         if (!$('#card-modal').hidden) { closeModal(); return; }
         if (App.themePickerOpen) { closeThemePicker(true); return; }
         if (App.menuColumnId) { App.menuColumnId = null; renderBoard(); return; }
@@ -997,6 +1253,7 @@
   // ---------- init ----------
   function init() {
     App.board = S.loadBoard(storage);
+    restoreBoardFile();
     bindTopbar();
     bindModal();
     bindConfirm();

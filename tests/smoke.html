@@ -36,6 +36,7 @@
             <button type="button" class="theme-option" data-theme-name="factory" aria-pressed="false"><span class="theme-dots"></span>Factory</button>
           </div>
         </span>
+        <button id="btn-file" class="icon-btn" type="button" aria-label="Board file"></button>
         <button id="btn-export" class="icon-btn" type="button" aria-label="Export board"></button>
         <button id="btn-import" class="icon-btn" type="button" aria-label="Import board"></button>
         <button id="btn-reset" class="icon-btn" type="button" aria-label="Reset board"></button>
@@ -117,6 +118,7 @@
   </div>
 
   <input type="file" id="import-file" accept=".json,application/json" hidden>
+  <input type="file" id="board-file-input" accept=".json,application/json" hidden>
 
   <pre id="report" style="white-space:pre-wrap;padding:16px;font-family:monospace"></pre>
 
@@ -148,7 +150,7 @@
         return null;
       }
 
-      function run() {
+      async function run() {
         try {
           // T1: initial render
           ok('T1 initial: 3 columns', bySelAll('.column').length === 3, bySelAll('.column').length);
@@ -351,6 +353,24 @@
             }
           }
           ok('T10 edited card saved', renamedSaved);
+
+          // T13: board-file fallback (only in browsers without the File System Access API)
+          if (typeof window.showSaveFilePicker !== 'function') {
+            ok('T13a fallback input present', !!$('board-file-input'));
+            var loader = window.Kanban && window.Kanban._loadBoardFileFallback;
+            ok('T13b fallback loader exposed', typeof loader === 'function');
+            if (typeof loader === 'function') {
+              var otherBoard = JSON.parse(JSON.stringify(window.Kanban.board));
+              otherBoard.name = 'From File';
+              var fbFile = new File([JSON.stringify(otherBoard)], 'from-file.json', { type: 'application/json' });
+              loader(fbFile);
+              await new Promise(function (r) { setTimeout(r, 50); }); // FileReader is async
+              ok('T13c conflict dialog shown', !$('confirm-modal').hidden);
+              $('confirm-yes').click();
+              ok('T13d board loaded from file', window.Kanban.board.name === 'From File');
+              ok('T13e readonly status set', window.Kanban.fileStatus === 'readonly' && window.Kanban.fileName === 'from-file.json', window.Kanban.fileStatus);
+            }
+          }
 
           // T11: no runtime errors
           ok('T11 no JS errors', window.__errors.length === 0, window.__errors.join('; '));

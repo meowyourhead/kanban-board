@@ -59,6 +59,7 @@
             </button>
           </div>
         </span>
+        <button id="btn-file" class="icon-btn" type="button" title="Connect a board file (e.g. in a shared folder) so every change is saved there automatically" aria-label="Board file"></button>
         <button id="btn-export" class="icon-btn" type="button" title="Export board as JSON" aria-label="Export board">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M5 7.5L8 10.5l3-3M3 13.5h10"/></svg>
         </button>
@@ -174,6 +175,8 @@
         <p class="muted help-note">
           Everything is stored locally in your browser (localStorage) — nothing leaves this computer.
           Use <strong>Export</strong> in the toolbar to keep a backup or move the board elsewhere.
+          Click the <strong>folder icon</strong> to connect a board file (e.g. on a shared folder): every change is then saved there automatically, and the connection survives restarts — just reopen this page.
+          In browsers that cannot write files directly (such as Brave), the folder icon loads a board file read-only instead — use <strong>Export</strong> to save changes back to it.
         </p>
       </div>
     </div>
@@ -186,6 +189,7 @@
   </div>
 
   <input type="file" id="import-file" accept=".json,application/json" hidden>
+  <input type="file" id="board-file-input" accept=".json,application/json" hidden>
 
   <script src="vendor/Sortable.min.js"></script>
   <script src="js/state.js"></script>
