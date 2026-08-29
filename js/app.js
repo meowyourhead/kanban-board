@@ -58,6 +58,7 @@
     flag: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14V2.5M4 2.5h8L10.5 5 12 7.5H4"/></svg>',
     user: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="5" r="2.5"/><path d="M3 14a5 5 0 0 1 10 0"/></svg>',
     check: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>',
+    pencil: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.3 2.7l2 2L5.5 12.5 3 14l.5-2.5z"/></svg>',
     plus: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>',
     file: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h3L8 4.8h4.5A1.5 1.5 0 0 1 14 6.3v5.2a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5z"/></svg>'
   };
@@ -714,6 +715,7 @@
           '<input type="checkbox" data-item="' + i.id + '"' + (i.done ? ' checked' : '') + '>' +
           '<span>' + esc(i.text) + '</span>' +
         '</label>' +
+        '<button class="icon-btn cl-edit" type="button" data-edit-item="' + i.id + '" title="Edit item">' + ICONS.pencil + '</button>' +
         '<button class="icon-btn cl-del" type="button" data-del-item="' + i.id + '" title="Remove item">' + ICONS.close + '</button>' +
       '</li>';
     }).join('');
@@ -794,9 +796,49 @@
       if (cb) commit(S.toggleChecklistItem(App.board, App.activeCardId, cb.getAttribute('data-item')));
     });
     $('#cm-checklist').addEventListener('click', function (e) {
+      var edit = e.target.closest('[data-edit-item]');
+      if (edit) { startEditItem(edit); return; }
       var del = e.target.closest('[data-del-item]');
       if (del) commit(S.removeChecklistItem(App.board, App.activeCardId, del.getAttribute('data-del-item')));
     });
+
+    function startEditItem(btnEl) {
+      var itemId = btnEl.getAttribute('data-edit-item');
+      var card = S.getCard(App.board, App.activeCardId);
+      if (!card) return;
+      var item = null;
+      for (var i = 0; i < card.checklist.length; i++) if (card.checklist[i].id === itemId) { item = card.checklist[i]; break; }
+      if (!item) return;
+
+      var rowEl = btnEl.closest('.cl-row');
+      var span = $('.cl-item span', rowEl);
+      if (!span) return; // already editing this row
+
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'cl-edit-input';
+      input.maxLength = 300;
+      input.value = item.text;
+      input.setAttribute('aria-label', 'Edit checklist item');
+      span.replaceWith(input);
+      btnEl.hidden = true;
+      input.focus();
+      input.select();
+
+      var done = false;
+      function finish(save) {
+        if (done) return;
+        done = true;
+        if (save && input.value.trim()) commit(S.editChecklistItem(App.board, App.activeCardId, itemId, input.value.trim()));
+        else renderModal();
+      }
+      input.addEventListener('keydown', function (e) {
+        e.stopPropagation();
+        if (e.key === 'Enter') finish(true);
+        else if (e.key === 'Escape') finish(false);
+      });
+      input.addEventListener('blur', function () { finish(true); });
+    }
 
     function addCheckItem() {
       var el = $('#cm-new-item');

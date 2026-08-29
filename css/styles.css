@@ -953,8 +953,14 @@ select { cursor: pointer; }
   text-decoration: line-through;
   color: var(--text-3);
 }
-.cl-del { opacity: 0; }
-.cl-row:hover .cl-del, .cl-del:focus-visible { opacity: 1; }
+.cl-edit, .cl-del { opacity: 0; }
+.cl-row:hover .cl-edit, .cl-row:hover .cl-del, .cl-edit:focus-visible, .cl-del:focus-visible { opacity: 1; }
+
+.cl-edit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 7px;
+}
 
 .modal-foot {
   display: flex;

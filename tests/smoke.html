@@ -213,6 +213,20 @@
           var cb = bySel('#cm-checklist input[type="checkbox"]');
           if (cb) cb.click();
           ok('T4 checklist item checked', !!bySel('#cm-checklist .cl-item.done'));
+          // Edit the item inline: pencil button -> input -> Enter saves
+          var editBtn = bySel('#cm-checklist [data-edit-item]');
+          ok('T4 edit button present', !!editBtn);
+          if (editBtn) {
+            editBtn.click();
+            var ei = bySel('#cm-checklist .cl-edit-input');
+            ok('T4 edit input appears', !!ei);
+            if (ei) {
+              ei.value = 'step one (edited)';
+              fire(ei, 'keydown', { key: 'Enter' });
+            }
+          }
+          var editedSpan = bySel('#cm-checklist .cl-item span');
+          ok('T4 item text updated', !!editedSpan && editedSpan.textContent === 'step one (edited)', editedSpan && editedSpan.textContent);
           $('cm-close').click();
           ok('T4 modal closed', $('card-modal').hidden);
           // Check the board DOM (not document.body.textContent — this test's own

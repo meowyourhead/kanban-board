@@ -88,6 +88,23 @@ test('checklist ops add/toggle/remove items', () => {
   assert.equal(b2.cards[cardId].checklist.length, 3);
 });
 
+test('editChecklistItem renames an item, trims length, bumps updatedAt', () => {
+  const b = S.defaultBoard();
+  const cardId = b.columns[0].cards[0];
+  let pre = S.addChecklistItem(b, cardId, { id: 'i1', text: 'task' });
+  const past = '2000-01-01T00:00:00.000Z';
+  pre.cards[cardId].updatedAt = past; // force an old timestamp
+  let b2 = S.editChecklistItem(pre, cardId, 'i1', 'renamed task');
+  const item = b2.cards[cardId].checklist.find(i => i.id === 'i1');
+  assert.equal(item.text, 'renamed task');
+  assert.equal(b2.cards[cardId].updatedAt > past, true); // bumped to "now"
+  // input board not mutated (immutability)
+  assert.equal(pre.cards[cardId].checklist.find(i => i.id === 'i1').text, 'task');
+  // unknown item id is a no-op on the checklist
+  const b3 = S.editChecklistItem(b2, cardId, 'nope', 'x');
+  assert.deepEqual(b3.cards[cardId].checklist.map(i => i.text), b2.cards[cardId].checklist.map(i => i.text));
+});
+
 test('labels can be added and assigned to cards', () => {
   const b = S.defaultBoard();
   const b2 = S.addLabel(b, { id: 'l1', name: 'Urgent', color: '#e5484d' });

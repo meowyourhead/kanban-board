@@ -424,6 +424,17 @@
     return b;
   }
 
+  function editChecklistItem(board, cardId, itemId, text) {
+    var b = clone(board);
+    var c = b.cards[cardId];
+    if (!c || !isStr(text)) return b;
+    for (var i = 0; i < c.checklist.length; i++) {
+      if (c.checklist[i].id === itemId) { c.checklist[i].text = text.slice(0, 300); break; }
+    }
+    c.updatedAt = nowISO();
+    return b;
+  }
+
   // ---- labels ----
   function addLabel(board, label) {
     var b = clone(board);
@@ -532,6 +543,7 @@
     addChecklistItem: addChecklistItem,
     toggleChecklistItem: toggleChecklistItem,
     removeChecklistItem: removeChecklistItem,
+    editChecklistItem: editChecklistItem,
     addLabel: addLabel,
     removeLabel: removeLabel,
     setCardLabels: setCardLabels,
