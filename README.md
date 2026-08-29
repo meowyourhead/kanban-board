@@ -51,7 +51,7 @@ restore, use **Import**.
 
 ```
 index.html              app shell (toolbar, board, modals)
-css/styles.css          design system, eight themes (light / dark / sticky / blueprint / factory / cyberpunk / claude / ios-glass)
+css/styles.css          design system, seven themes (sticky / blueprint / cyberpunk / claude / ios-glass / swiss / forest)
 js/state.js             pure data model + operations (no DOM) — the tested core
 js/app.js               UI layer: rendering, drag & drop, modals, shortcuts
 vendor/Sortable.min.js  vendored drag-and-drop library (Sortable.js)

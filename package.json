@@ -6,9 +6,11 @@
   "type": "commonjs",
   "scripts": {
     "vendor": "node -e \"const fs=require('fs'),p=require('path');fs.mkdirSync('vendor',{recursive:true});fs.copyFileSync(p.join(p.dirname(require.resolve('sortablejs')),'Sortable.min.js'),'vendor/Sortable.min.js');console.log('Vendored Sortable.min.js')\"",
-    "test": "node --test tests/state.test.js"
+    "test": "node --test tests/state.test.js",
+    "smoke": "node tests/smoke.mjs"
   },
   "devDependencies": {
+    "jsdom": "^30.0.1",
     "sortablejs": "^1.15.6"
   }
 }

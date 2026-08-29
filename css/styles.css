@@ -1,7 +1,7 @@
 /* ==========================================================================
    Kanban board — styles.css
-    Minimalist, dependency-free, eight themes
-    (light / dark / sticky / blueprint / factory / cyberpunk / claude / ios-glass).
+    Minimalist, dependency-free, seven themes
+    (sticky / blueprint / cyberpunk / claude / ios-glass / swiss / forest).
    No web fonts, no icon fonts.
    ========================================================================== */
 
@@ -14,52 +14,54 @@
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-[data-theme="light"] {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #f1f3f6;
-  --border: #e2e6ea;
-  --border-strong: #cdd4da;
-  --text: #1c2128;
-  --text-2: #5d6771;
-  --text-3: #8a94a0;
-  --accent: #3e63dd;
-  --accent-soft: rgba(62, 99, 221, 0.10);
+/* swiss — "International Style": warm paper, near-black ink, one red accent */
+[data-theme="swiss"] {
+  --bg: #f4f2ec;            /* warm paper */
+  --surface: #ffffff;       /* card white */
+  --surface-2: #e9e7df;     /* panel gray */
+  --border: #d8d5ca;
+  --border-strong: #a8a496;
+  --text: #101010;          /* near-black ink */
+  --text-2: #4c4a44;
+  --text-3: #8b8779;
+  --accent: #e30613;        /* swiss red */
+  --accent-soft: rgba(227, 6, 19, 0.08);
   --accent-contrast: #ffffff;
-  --danger: #d93036;
-  --danger-soft: rgba(217, 48, 54, 0.10);
-  --warning: #d9730d;
-  --ok: #2f9e44;
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
-  --shadow-md: 0 2px 6px rgba(16, 24, 40, 0.08);
-  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.18);
-  --scrim: rgba(15, 23, 32, 0.42);
-  --toast-bg: #1f252c;
-  --toast-text: #f5f7fa;
+  --danger: #b30510;
+  --danger-soft: rgba(179, 5, 16, 0.10);
+  --warning: #c47f17;
+  --ok: #2e7d32;
+  --shadow-sm: 0 1px 2px rgba(20, 18, 12, 0.05);
+  --shadow-md: 0 2px 6px rgba(20, 18, 12, 0.07);
+  --shadow-lg: 0 14px 34px rgba(20, 18, 12, 0.16);
+  --scrim: rgba(25, 22, 16, 0.40);
+  --toast-bg: #101010;
+  --toast-text: #f4f2ec;
 }
 
-[data-theme="dark"] {
-  --bg: #14171c;
-  --surface: #1d2127;
-  --surface-2: #242a32;
-  --border: #303845;
-  --border-strong: #414c5c;
-  --text: #e7eaee;
-  --text-2: #a5aeb9;
-  --text-3: #77818e;
-  --accent: #6d8bff;
-  --accent-soft: rgba(109, 139, 255, 0.14);
-  --accent-contrast: #0d1220;
-  --danger: #f2555a;
-  --danger-soft: rgba(242, 85, 90, 0.14);
-  --warning: #ffa94d;
-  --ok: #51cf66;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
-  --scrim: rgba(0, 0, 0, 0.55);
-  --toast-bg: #e7eaee;
-  --toast-text: #171b21;
+/* forest — "Undergrowth": misty green field, birch-white cards, fir accent */
+[data-theme="forest"] {
+  --bg: #eef3ea;            /* misty green */
+  --surface: #ffffff;       /* birch white */
+  --surface-2: #dfe9da;     /* moss panel */
+  --border: #c8d6bf;
+  --border-strong: #a4b897;
+  --text: #1e2a1c;          /* deep pine ink */
+  --text-2: #51634c;
+  --text-3: #8a9a80;
+  --accent: #2f6b3a;        /* fir green */
+  --accent-soft: rgba(47, 107, 58, 0.10);
+  --accent-contrast: #ffffff;
+  --danger: #c0392b;
+  --danger-soft: rgba(192, 57, 43, 0.10);
+  --warning: #b07d1e;
+  --ok: #35804a;
+  --shadow-sm: 0 1px 2px rgba(30, 42, 28, 0.06);
+  --shadow-md: 0 2px 6px rgba(30, 42, 28, 0.08);
+  --shadow-lg: 0 14px 34px rgba(30, 42, 28, 0.18);
+  --scrim: rgba(24, 36, 22, 0.42);
+  --toast-bg: #1e2a1c;
+  --toast-text: #eef3ea;
 }
 
 /* sticky — "The Wall": workshop corkboard, paper columns, post-it cards */
@@ -112,33 +114,6 @@
   --scrim: rgba(3, 12, 30, 0.6);
   --toast-bg: #edf3ff;
   --toast-text: #0b2a5c;
-}
-
-/* factory — "Line": concrete floor, safety orange, traveler cards */
-[data-theme="factory"] {
-  --bg: #bdc4cb;            /* concrete */
-  --surface: #eceef0;       /* panel white */
-  --surface-2: #fbfcfd;     /* traveler card */
-  --border: #a5adb6;
-  --border-strong: #87919c;
-  --text: #17191d;          /* machine black */
-  --text-2: #4b535c;
-  --text-3: #767f8a;
-  --accent: #ee5a0b;        /* safety orange */
-  --accent-soft: rgba(238, 90, 11, 0.14);
-  --accent-contrast: #ffffff;
-  --danger: #d92d20;
-  --danger-soft: rgba(217, 45, 32, 0.12);
-  --warning: #c77800;
-  --ok: #2f9e44;
-  --shadow-sm: 0 1px 2px rgba(23, 25, 29, 0.16);
-  --shadow-md: 0 3px 8px rgba(23, 25, 29, 0.18);
-  --shadow-lg: 0 14px 34px rgba(23, 25, 29, 0.32);
-  --scrim: rgba(23, 25, 29, 0.45);
-  --toast-bg: #17191d;
-  --toast-text: #eceef0;
-  --font-condensed: "Arial Narrow", "Avenir Next Condensed", "Roboto Condensed", "Liberation Sans Narrow", sans-serif;
-  --hazard-dark: #23272c;
 }
 
 /* cyberpunk — "Neon District": void black, phosphor grid, glowing edges */
@@ -334,15 +309,17 @@ select { cursor: pointer; }
 
 /* ---------- topbar ---------- */
 
+/* Grid (not flex) so the search box sits in a true center column,
+   centered regardless of how wide the left/right groups are. */
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   min-height: var(--topbar-h);
   padding: 8px 16px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
 }
 
 .topbar-left {
@@ -350,7 +327,7 @@ select { cursor: pointer; }
   align-items: center;
   gap: 8px;
   min-width: 0;
-  flex: 1 1 220px;
+  justify-self: start;
 }
 .logo { color: var(--accent); display: inline-flex; flex: none; }
 .logo svg rect:last-child { fill: currentColor; }
@@ -377,8 +354,8 @@ select { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1 1 180px;
-  max-width: 420px;
+  width: clamp(200px, 32vw, 420px);
+  justify-self: center;
   padding: 5px 6px 5px 10px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -1046,9 +1023,9 @@ select { cursor: pointer; }
 
 /* ---------- theme signatures ---------- */
 
-[data-theme="light"], [data-theme="sticky"], [data-theme="factory"],
-[data-theme="claude"], [data-theme="ios-glass"] { color-scheme: light; }
-[data-theme="dark"], [data-theme="blueprint"], [data-theme="cyberpunk"] { color-scheme: dark; }
+[data-theme="sticky"], [data-theme="claude"], [data-theme="ios-glass"],
+[data-theme="swiss"], [data-theme="forest"] { color-scheme: light; }
+[data-theme="blueprint"], [data-theme="cyberpunk"] { color-scheme: dark; }
 
 /* sticky — post-it cards, masking tape, handwriting titles */
 [data-theme="sticky"] .card-title { font-family: var(--font-hand); font-size: 13px; line-height: 1.4; }
@@ -1108,44 +1085,14 @@ select { cursor: pointer; }
 [data-theme="blueprint"] .column-title,
 [data-theme="blueprint"] .board-name { text-transform: uppercase; letter-spacing: 0.06em; }
 
-/* factory — hazard stripes, condensed stencil headers */
-[data-theme="factory"] .topbar { position: relative; border-bottom: none; }
-[data-theme="factory"] .topbar::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -6px;
-  height: 5px;
-  background: repeating-linear-gradient(-45deg, var(--accent) 0 10px, var(--hazard-dark) 10px 20px);
-}
-[data-theme="factory"] .column-title {
-  font-family: var(--font-condensed);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 14px;
-  font-weight: 700;
-}
-[data-theme="factory"] .board-name { font-family: var(--font-condensed); text-transform: uppercase; letter-spacing: 0.05em; }
-[data-theme="factory"] .column { position: relative; }
-[data-theme="factory"] .column.over-wip::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  right: -1px;
-  height: 6px;
-  border-radius: 9px 9px 0 0;
-  background: repeating-linear-gradient(-45deg, var(--accent) 0 9px, var(--hazard-dark) 9px 18px);
-}
-
-/* cyberpunk — phosphor grid, neon glow on hover, glowing topbar rule */
+/* cyberpunk — phosphor grid + CRT scanlines, neon glow on hover, glowing topbar rule */
 [data-theme="cyberpunk"] { --font: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
 [data-theme="cyberpunk"] body {
   background-image:
     linear-gradient(rgba(0, 255, 213, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 213, 0.04) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(90deg, rgba(0, 255, 213, 0.04) 1px, transparent 1px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px);
+  background-size: 28px 28px, 28px 28px, auto;
 }
 [data-theme="cyberpunk"] .topbar { position: relative; }
 [data-theme="cyberpunk"] .topbar::after {
@@ -1164,9 +1111,25 @@ select { cursor: pointer; }
   border-color: var(--border-strong);
   box-shadow: var(--shadow-md), 0 0 14px rgba(0, 255, 213, 0.20);
 }
+/* chromatic-aberration titles + HUD corner brackets on cards */
+[data-theme="cyberpunk"] .column-title { text-shadow: 1px 0 rgba(255, 59, 107, 0.45), -1px 0 rgba(0, 255, 213, 0.35); }
+[data-theme="cyberpunk"] .card { position: relative; }
+[data-theme="cyberpunk"] .card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--accent), var(--accent)) top left / 9px 2px,
+    linear-gradient(var(--accent), var(--accent)) top left / 2px 9px,
+    linear-gradient(var(--accent), var(--accent)) bottom right / 9px 2px,
+    linear-gradient(var(--accent), var(--accent)) bottom right / 2px 9px;
+  background-repeat: no-repeat;
+  opacity: 0.55;
+}
 
-/* claude — serif display type, terracotta rule under the topbar */
-[data-theme="claude"] .column-title { font-family: var(--font-serif); font-size: 14.5px; }
+/* claude — studio paper: serif headings, double rule under the topbar */
+[data-theme="claude"] .column-title { font-family: var(--font-serif); font-size: 14.5px; letter-spacing: 0.02em; }
 [data-theme="claude"] .board-name { font-family: var(--font-serif); }
 [data-theme="claude"] .topbar { position: relative; }
 [data-theme="claude"] .topbar::after {
@@ -1178,6 +1141,16 @@ select { cursor: pointer; }
   height: 2px;
   background: linear-gradient(90deg, var(--accent), transparent 75%);
 }
+[data-theme="claude"] .topbar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--border-strong);
+}
+[data-theme="claude"] .card:hover:not(.dragging) { border-color: var(--accent); }
 
 /* ios-glass — sky gradient blobs behind frosted panels */
 [data-theme="ios-glass"] body {
@@ -1200,7 +1173,73 @@ select { cursor: pointer; }
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
-[data-theme="ios-glass"] .search-box { background: rgba(255, 255, 255, 0.35); }
+[data-theme="ios-glass"] .search-box {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding-left: 14px;
+}
+/* glass cards get a top-edge specular highlight */
+[data-theme="ios-glass"] .card {
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.4), transparent 45%);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+[data-theme="ios-glass"] .card:hover:not(.dragging) {
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+/* swiss — International Style: strict grid field, ink rules, red index squares */
+[data-theme="swiss"] { --radius: 2px; --radius-sm: 2px; }
+[data-theme="swiss"] body {
+  background-image:
+    linear-gradient(rgba(16, 16, 16, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 16, 16, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+[data-theme="swiss"] .topbar { position: relative; border-bottom-width: 2px; border-bottom-color: var(--text); }
+[data-theme="swiss"] .topbar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: -2px;
+  width: 6px;
+  background: var(--accent);
+}
+[data-theme="swiss"] .column-title,
+[data-theme="swiss"] .board-name { text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+[data-theme="swiss"] .column-title::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  background: var(--accent);
+}
+[data-theme="swiss"] .card { box-shadow: none; border-color: var(--border-strong); }
+[data-theme="swiss"] .card:hover:not(.dragging) { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* forest — dappled canopy light, tree-ring medallions on column headers */
+[data-theme="forest"] body {
+  background-image:
+    radial-gradient(46% 58% at 14% -4%, rgba(255, 236, 170, 0.5), transparent 70%),
+    radial-gradient(50% 62% at 86% 8%, rgba(126, 196, 122, 0.28), transparent 70%),
+    radial-gradient(64% 70% at 50% 108%, rgba(47, 107, 58, 0.12), transparent 72%);
+}
+[data-theme="forest"] .topbar { border-bottom-width: 2px; border-bottom-color: var(--border-strong); }
+[data-theme="forest"] .column-header { position: relative; }
+[data-theme="forest"] .column-header::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, var(--accent) 0 1px, transparent 1px 3.2px),
+    var(--surface);
+  box-shadow: 0 1px 2px rgba(30, 42, 28, 0.25);
+}
 
 /* ---------- theme picker ---------- */
 
@@ -1262,12 +1301,15 @@ select { cursor: pointer; }
 /* ---------- responsive ---------- */
 
 @media (max-width: 720px) {
+  /* back to stacked flex rows on narrow screens */
   .topbar {
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 8px 10px;
   }
   .topbar-left { flex-basis: 100%; order: 1; }
-  .search-box { order: 2; flex-basis: 100%; max-width: none; }
+  .search-box { order: 2; flex-basis: 100%; width: auto; max-width: none; }
   .topbar-right { order: 3; }
   .btn#btn-add-list span { display: none; }
   .board { padding: 10px; }

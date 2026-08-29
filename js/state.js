@@ -14,7 +14,7 @@
 
   var STORAGE_KEY = 'kanban.board.v1';
   var VERSION = 1;
-  var THEMES = ['light', 'dark', 'sticky', 'blueprint', 'factory', 'cyberpunk', 'claude', 'ios-glass'];
+  var THEMES = ['sticky', 'blueprint', 'cyberpunk', 'claude', 'ios-glass', 'swiss', 'forest'];
 
   var PRIORITIES = [
     { value: 0, label: 'Low' },
@@ -58,7 +58,7 @@
     var board = {
       version: VERSION,
       name: 'My Board',
-      theme: 'light',
+      theme: 'sticky',
       columns: [
         { id: uid(), name: cols[0], collapsed: false, wipLimit: null, cards: [] },
         { id: uid(), name: cols[1], collapsed: false, wipLimit: null, cards: [] },
@@ -94,7 +94,7 @@
     var b = {
       version: VERSION,
       name: isStr(raw.name) ? raw.name : 'My Board',
-      theme: THEMES.indexOf(raw.theme) !== -1 ? raw.theme : 'light',
+      theme: THEMES.indexOf(raw.theme) !== -1 ? raw.theme : 'sticky',
       columns: [],
       cards: {},
       labels: {}

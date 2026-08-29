@@ -144,7 +144,7 @@ test('search matches title, description, assignee, and labels', () => {
 
 test('normalizeBoard drops orphan card/label references', () => {
   const raw = {
-    name: 'X', theme: 'dark',
+    name: 'X', theme: 'blueprint',
     columns: [{ id: 'c1', name: 'L1', cards: ['good', 'ghost'] }],
     cards: { good: { id: 'good', title: 'T', labelIds: ['real', 'ghost'] } },
     labels: { real: { id: 'real', name: 'R' } }
@@ -152,7 +152,7 @@ test('normalizeBoard drops orphan card/label references', () => {
   const b = S.normalizeBoard(raw);
   assert.deepEqual(b.columns[0].cards, ['good']);
   assert.deepEqual(b.cards.good.labelIds, ['real']);
-  assert.equal(b.theme, 'dark');
+  assert.equal(b.theme, 'blueprint');
 });
 
 test('normalizeBoard on garbage returns a valid board', () => {
@@ -196,6 +196,16 @@ test('setWipLimit stores and clears', () => {
   assert.equal(b2.columns[0].wipLimit, 5);
   const b3 = S.setWipLimit(b2, id, null);
   assert.equal(b3.columns[0].wipLimit, null);
+});
+
+test('THEMES registers all seven themes and setTheme accepts each', () => {
+  const expected = ['sticky', 'blueprint', 'cyberpunk', 'claude', 'ios-glass', 'swiss', 'forest'];
+  for (const t of expected) assert.ok(S.THEMES.indexOf(t) !== -1, 'missing theme: ' + t);
+  let b = S.defaultBoard();
+  for (const t of expected) {
+    const b2 = S.setTheme(b, t);
+    assert.equal(b2.theme, t);
+  }
 });
 
 test('toggleColumn flips collapsed state', () => {

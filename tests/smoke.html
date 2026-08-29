@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="sticky">
 <head>
   <meta charset="utf-8">
   <title>smoke</title>
@@ -29,14 +29,13 @@
           <button id="btn-theme" class="icon-btn" type="button" aria-label="Choose theme"></button>
           <div id="theme-picker" class="theme-picker" hidden role="group" aria-label="Board themes">
             <p class="theme-picker-title">Theme</p>
-            <button type="button" class="theme-option" data-theme-name="light" aria-pressed="false"><span class="theme-dots"></span>Light</button>
-            <button type="button" class="theme-option" data-theme-name="dark" aria-pressed="false"><span class="theme-dots"></span>Dark</button>
             <button type="button" class="theme-option" data-theme-name="sticky" aria-pressed="false"><span class="theme-dots"></span>Sticky notes</button>
             <button type="button" class="theme-option" data-theme-name="blueprint" aria-pressed="false"><span class="theme-dots"></span>Blueprint</button>
-            <button type="button" class="theme-option" data-theme-name="factory" aria-pressed="false"><span class="theme-dots"></span>Factory</button>
             <button type="button" class="theme-option" data-theme-name="cyberpunk" aria-pressed="false"><span class="theme-dots"></span>Cyberpunk</button>
             <button type="button" class="theme-option" data-theme-name="claude" aria-pressed="false"><span class="theme-dots"></span>Claude</button>
             <button type="button" class="theme-option" data-theme-name="ios-glass" aria-pressed="false"><span class="theme-dots"></span>iOS Glass</button>
+            <button type="button" class="theme-option" data-theme-name="swiss" aria-pressed="false"><span class="theme-dots"></span>Swiss</button>
+            <button type="button" class="theme-option" data-theme-name="forest" aria-pressed="false"><span class="theme-dots"></span>Forest</button>
           </div>
         </span>
         <button id="btn-file" class="icon-btn" type="button" aria-label="Board file"></button>
@@ -305,18 +304,32 @@
           $('btn-theme').click();
           ok('T7b picker opens', picker.hidden === false && $('btn-theme').getAttribute('aria-expanded') === 'true');
           var colBefore = bySel('.column');
-          var darkOpt = picker.querySelector('[data-theme-name="dark"]');
-          if (darkOpt) darkOpt.click();
+          var bpOpt = picker.querySelector('[data-theme-name="blueprint"]');
+          if (bpOpt) bpOpt.click();
           var themeSaved = null;
           try { themeSaved = JSON.parse(localStorage.getItem('kanban.board.v1')).theme; } catch (e) { themeSaved = null; }
-          ok('T7c theme applies + persists', document.documentElement.getAttribute('data-theme') === 'dark' && themeSaved === 'dark', themeSaved);
+          ok('T7c theme applies + persists', document.documentElement.getAttribute('data-theme') === 'blueprint' && themeSaved === 'blueprint', themeSaved);
           ok('T7c2 theme pick does not rebuild board DOM', bySel('.column') === colBefore);
           $('btn-theme').click(); // reopen
           var activeOpt = picker.querySelector('.theme-option.active');
-          ok('T7d active option marked', !!activeOpt && activeOpt.getAttribute('data-theme-name') === 'dark');
-          var lightOpt = picker.querySelector('[data-theme-name="light"]');
-          if (lightOpt) lightOpt.click();
-          ok('T7e back to light + closed', document.documentElement.getAttribute('data-theme') === 'light' && picker.hidden === true);
+          ok('T7d active option marked', !!activeOpt && activeOpt.getAttribute('data-theme-name') === 'blueprint');
+          var claudeOpt = picker.querySelector('[data-theme-name="claude"]');
+          if (claudeOpt) claudeOpt.click();
+          ok('T7e switch again + closed', document.documentElement.getAttribute('data-theme') === 'claude' && picker.hidden === true);
+
+          // T7f: every registered theme applies + persists, board DOM untouched across the cycle
+          var allThemes = window.KanbanState.THEMES;
+          ok('T7f seven themes registered', allThemes.length === 7, String(allThemes.length));
+          for (var ti = 0; ti < allThemes.length; ti++) {
+            $('btn-theme').click(); // reopen picker each iteration
+            var themeOpt = picker.querySelector('[data-theme-name="' + allThemes[ti] + '"]');
+            ok('T7f option present: ' + allThemes[ti], !!themeOpt);
+            if (themeOpt) themeOpt.click();
+            var savedTheme2 = null;
+            try { savedTheme2 = JSON.parse(localStorage.getItem('kanban.board.v1')).theme; } catch (e) {}
+            ok('T7f applies+persists: ' + allThemes[ti], document.documentElement.getAttribute('data-theme') === allThemes[ti] && savedTheme2 === allThemes[ti], String(savedTheme2));
+          }
+          ok('T7f board DOM stable across theme cycle', bySel('.column') === colBefore);
 
           // T8: collapse / expand
           var smokeList = columnWithTitle('Smoke list');
