@@ -152,6 +152,53 @@
         return null;
       }
 
+      // Minimal in-memory stand-in for the IndexedDB API surface app.js uses.
+      function installFakeIDB(seed) {
+        var data = {};
+        Object.keys(seed || {}).forEach(function (k) { data[k] = seed[k]; });
+        function makeReq() { return { onsuccess: null, onerror: null, result: undefined }; }
+        var db = {
+          close: function () {},
+          transaction: function () {
+            var tx = {
+              objectStore: function () {
+                return {
+                  get: function (key) {
+                    var r = makeReq();
+                    setTimeout(function () { r.result = data[key]; if (r.onsuccess) r.onsuccess(); }, 0);
+                    return r;
+                  },
+                  put: function (value, key) {
+                    data[key] = value;
+                    setTimeout(function () { if (tx.oncomplete) tx.oncomplete(); }, 0);
+                    return makeReq();
+                  }
+                };
+              }
+            };
+            return tx;
+          }
+        };
+        window.indexedDB = {
+          open: function () {
+            var r = makeReq();
+            setTimeout(function () { r.result = db; if (r.onsuccess) r.onsuccess(); }, 0);
+            return r;
+          }
+        };
+      }
+
+      // Stand-in for a FileSystemFileHandle pointing at a board JSON file.
+      function makeFakeHandle(boardObj) {
+        var text = JSON.stringify(boardObj);
+        return {
+          queryPermission: function () { return Promise.resolve('granted'); },
+          getFile: function () {
+            return Promise.resolve({ size: text.length, text: function () { return Promise.resolve(text); } });
+          }
+        };
+      }
+
       async function run() {
         try {
           // T1: initial render
@@ -400,6 +447,23 @@
               ok('T13d board loaded from file', window.Kanban.board.name === 'From File');
               ok('T13e readonly status set', window.Kanban.fileStatus === 'readonly' && window.Kanban.fileName === 'from-file.json', window.Kanban.fileStatus);
             }
+          }
+
+          // T14: startup auto-restore from the backup file — loads without prompting
+          var restored = JSON.parse(JSON.stringify(window.Kanban.board));
+          restored.name = 'Restored Board';
+          window.showSaveFilePicker = function () { return Promise.reject(new Error('stub')); }; // fileSupported() gate
+          installFakeIDB({ 'kanban.filehandle.v1': makeFakeHandle(restored) });
+          ok('T14a restore hook exposed', typeof window.Kanban._restoreBoardFile === 'function');
+          if (typeof window.Kanban._restoreBoardFile === 'function') {
+            window.Kanban._restoreBoardFile();
+            await new Promise(function (r) { setTimeout(r, 80); }); // idb + file reads are async
+            ok('T14b board restored from backup', !!(window.Kanban.board && window.Kanban.board.name === 'Restored Board'), window.Kanban.board && window.Kanban.board.name);
+            ok('T14c no confirm prompt shown', $('confirm-modal').hidden);
+            var savedAfter = null;
+            try { savedAfter = JSON.parse(localStorage.getItem('kanban.board.v1')); } catch (e) {}
+            ok('T14d localStorage synced to backup', !!(savedAfter && savedAfter.name === 'Restored Board'), savedAfter && savedAfter.name);
+            ok('T14e file status connected', window.Kanban.fileStatus === 'ok', window.Kanban.fileStatus);
           }
 
           // T11: no runtime errors

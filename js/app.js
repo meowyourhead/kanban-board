@@ -519,6 +519,17 @@
               toast(isRestore ? 'Board file reconnected — auto-save on' : 'Connected to board file — auto-save on', null);
               return;
             }
+            if (isRestore) {
+              // Startup restore: the backup file is the source of truth, so load it
+              // automatically instead of prompting.
+              App.board = incoming;
+              render();
+              S.saveBoard(storage, App.board);
+              App.fileStatus = 'ok';
+              renderFileStatus();
+              toast('Restored board from backup file', null);
+              return;
+            }
             confirmDialog({
               title: 'Load board from file?',
               message: 'The connected file contains a different board than the one currently open. Load it and replace the current board, or keep the current board (the file will not be touched)?'
@@ -538,6 +549,12 @@
       })
       .catch(function (err) {
         if (err === INVALID_FILE) {
+          if (isRestore) {
+            // Never overwrite a backup we cannot read — keep the current board.
+            disconnectBoardFile();
+            toast('Backup file is not readable as a board — kept current board', null);
+            return;
+          }
           confirmDialog({
             title: 'Overwrite unreadable file?',
             message: 'The connected file is not a valid board. Overwrite it with the current board?'
@@ -629,6 +646,8 @@
       if (handle && handle.queryPermission) adoptBoardFile(handle, true);
     }).catch(function () {});
   }
+
+  App._restoreBoardFile = restoreBoardFile; // testing hook
 
   function onFileButtonClick() {
     if (!fileSupported()) {
