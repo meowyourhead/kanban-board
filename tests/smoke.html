@@ -191,12 +191,20 @@
       // Stand-in for a FileSystemFileHandle pointing at a board JSON file.
       function makeFakeHandle(boardObj) {
         var text = JSON.stringify(boardObj);
-        return {
+        var handle = {
           queryPermission: function () { return Promise.resolve('granted'); },
           getFile: function () {
             return Promise.resolve({ size: text.length, text: function () { return Promise.resolve(text); } });
-          }
+          },
+          createWritable: function () {
+            return {
+              write: function (data) { handle.writes.push(data); return Promise.resolve(); },
+              close: function () { return Promise.resolve(); }
+            };
+          },
+          writes: []
         };
+        return handle;
       }
 
       async function run() {
@@ -453,7 +461,8 @@
           var restored = JSON.parse(JSON.stringify(window.Kanban.board));
           restored.name = 'Restored Board';
           window.showSaveFilePicker = function () { return Promise.reject(new Error('stub')); }; // fileSupported() gate
-          installFakeIDB({ 'kanban.filehandle.v1': makeFakeHandle(restored) });
+          var t14Handle = makeFakeHandle(restored);
+          installFakeIDB({ 'kanban.filehandle.v1': t14Handle });
           ok('T14a restore hook exposed', typeof window.Kanban._restoreBoardFile === 'function');
           if (typeof window.Kanban._restoreBoardFile === 'function') {
             window.Kanban._restoreBoardFile();
@@ -465,6 +474,17 @@
             ok('T14d localStorage synced to backup', !!(savedAfter && savedAfter.name === 'Restored Board'), savedAfter && savedAfter.name);
             ok('T14e file status connected', window.Kanban.fileStatus === 'ok', window.Kanban.fileStatus);
           }
+
+          // T15: close-time backup — pagehide flushes the current board to the connected file, once
+          window.dispatchEvent(new Event('pagehide'));
+          await new Promise(function (r) { setTimeout(r, 30); });
+          ok('T15a pagehide wrote backup', t14Handle.writes.length === 1, String(t14Handle.writes.length));
+          var flushed = null;
+          try { flushed = JSON.parse(t14Handle.writes[0]); } catch (e) {}
+          ok('T15b backup matches current board', !!(flushed && flushed.name === 'Restored Board'), flushed && flushed.name);
+          window.dispatchEvent(new Event('beforeunload'));
+          await new Promise(function (r) { setTimeout(r, 30); });
+          ok('T15c no duplicate write on beforeunload', t14Handle.writes.length === 1, String(t14Handle.writes.length));
 
           // T11: no runtime errors
           ok('T11 no JS errors', window.__errors.length === 0, window.__errors.join('; '));

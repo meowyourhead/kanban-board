@@ -469,28 +469,78 @@
     btn.setAttribute('aria-label', btn.title);
   }
 
+  var fileWriting = false;
+  var fileWriteQueued = false;
+  var fileLastWritten = null;
+
+  function resetFileWriteState() {
+    fileWriting = false;
+    fileWriteQueued = false;
+    fileLastWritten = null;
+  }
+
   function writeBoardFile() {
     if (!fileSupported() || !App.fileHandle || App.fileStatus !== 'ok') return;
+    var json = JSON.stringify(App.board, null, 2);
+    if (json === fileLastWritten) return; // already up to date on disk
+    if (fileWriting) { fileWriteQueued = true; return; } // coalesce: one in-flight write is enough
+    fileWriting = true;
     var handle = App.fileHandle;
+    var ok = false;
     handle.createWritable().then(function (w) {
-      return w.write(JSON.stringify(App.board, null, 2)).then(function () { return w.close(); });
+      return w.write(json).then(function () { return w.close(); }).then(function () { ok = true; });
     }).catch(function (err) {
-      App.fileStatus = 'error';
-      renderFileStatus();
-      toast('Could not save board file: ' + ((err && err.name) || String(err)), null);
+      if (!ok) {
+        App.fileStatus = 'error';
+        renderFileStatus();
+        toast('Could not save board file: ' + ((err && err.name) || String(err)), null);
+      }
+    }).then(function () {
+      fileWriting = false;
+      if (ok) fileLastWritten = json;
+      else fileWriteQueued = false; // failed: status is now 'error', don't retry in a loop
+      if (fileWriteQueued) writeBoardFile();
     });
+  }
+
+  // Best-effort backup issued when the page is closed or hidden. createWritable/write/close are
+  // called synchronously so the write starts before unload proceeds; the promise chain only
+  // handles error reporting and releasing the in-flight flag if the page survives (bfcache).
+  function flushBoardFileSync() {
+    if (!fileSupported() || !App.fileHandle || App.fileStatus !== 'ok') return;
+    var json = JSON.stringify(App.board, null, 2);
+    if (json === fileLastWritten) return; // nothing new to save
+    if (fileWriting) return; // an async write is already in flight for the latest state
+    try {
+      var w = App.fileHandle.createWritable();
+      fileWriting = true; // treat as in-flight so concurrent writes coalesce behind it
+      fileLastWritten = json; // issued: dedupes pagehide + beforeunload double-firing
+      Promise.resolve(w.write(json)).then(function () { return w.close(); }).catch(function (err) {
+        if (App.fileStatus === 'ok') {
+          App.fileStatus = 'error';
+          renderFileStatus();
+          toast('Could not save board file: ' + ((err && err.name) || String(err)), null);
+        }
+      }).then(function () {
+        fileWriting = false;
+        if (App.fileStatus === 'error') fileLastWritten = null; // write failed: allow retry
+        if (fileWriteQueued) writeBoardFile();
+      });
+    } catch (e) {}
   }
 
   function disconnectBoardFile() {
     App.fileHandle = null;
     App.fileName = null;
     App.fileStatus = 'none';
+    resetFileWriteState();
     renderFileStatus();
   }
 
   function adoptBoardFile(handle, isRestore) {
     if (!handle) return;
     App.fileHandle = handle;
+    resetFileWriteState();
     Promise.resolve(handle.queryPermission ? handle.queryPermission({ mode: 'readwrite' }) : 'granted')
       .catch(function () { return 'prompt'; })
       .then(function (perm) {
@@ -1324,6 +1374,10 @@
     var board = $('#board');
     board.addEventListener('click', handleBoardClick);
     board.addEventListener('keydown', handleBoardKeydown);
+
+    // Back up to the connected file when the page is closed or hidden (pagehide also covers bfcache).
+    window.addEventListener('pagehide', flushBoardFileSync);
+    window.addEventListener('beforeunload', flushBoardFileSync);
 
     render();
   }

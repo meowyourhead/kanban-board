@@ -45,8 +45,9 @@ the network. To back up or move your board, use **Export** in the toolbar; to
 restore, use **Import**.
 
 You can also connect a board file (folder icon in the toolbar, e.g. in a shared
-folder): every change is auto-saved there, and on startup the app restores from
-that backup automatically if it has changed — no prompt.
+folder): every change is auto-saved there, the board is backed up again when you
+close or hide the page, and on startup the app restores from that backup
+automatically if it has changed — no prompt.
 
 > Note: clearing site data in the browser (or using a private window) removes the
 > board. Keep a JSON export if it matters.
