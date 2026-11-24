@@ -1,83 +1,179 @@
 <!doctype html>
-<html lang="en" data-theme="sticky">
+<html lang="en" data-theme="claude" data-genshin-element="geo" data-graphics="high">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A lightweight, offline Kanban board. All data stays in your browser.">
   <meta name="color-scheme" content="light dark">
   <title>Kanban</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='5.5' height='14' rx='1.2' fill='%233e63dd'/%3E%3Crect x='9.5' y='1' width='5.5' height='9' rx='1.2' fill='%239aa4b0'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="build/icon.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <div id="bg" aria-hidden="true"><span></span><div id="genshin-stars"></div><div id="pixel-farm"></div></div>
+  <div id="hud" aria-hidden="true">
+    <div class="hud-frame">
+      <span class="hud-corner tl"></span><span class="hud-corner tr"></span>
+      <span class="hud-corner bl"></span><span class="hud-corner br"></span>
+      <span class="hud-edge top"></span><span class="hud-edge bottom"></span>
+      <span class="hud-spine left"></span><span class="hud-spine right"></span>
+
+      <div class="hud-vitals">
+        <span class="hv-level">13</span>
+        <div class="hv-main">
+          <span class="hv-kicker">VITALS <b>99</b><i>165</i></span>
+          <div class="hv-bar"><i></i></div>
+          <span class="hv-link">CONNECTION 201 69.43</span>
+        </div>
+        <div class="hv-slots">
+          <span class="hv-slot s1"></span><span class="hv-slot s2"></span>
+          <span class="hv-slot s3"></span><span class="hv-slot s4"></span>
+        </div>
+      </div>
+
+      <div class="hud-map">
+        <span class="hm-kicker">CONNECTION ESTABLISHED</span>
+        <div class="hm-box">
+          <svg viewBox="0 0 152 88" preserveAspectRatio="none">
+            <g class="hm-blocks">
+              <path d="M4 4h24v18H4zM32 4h16v12H32zM52 4h30v22H52zM86 4h12v32H86zM102 4h46v14h-46zM4 30h20v18H4zM30 30h14v12H30zM120 24h28v18h-28zM4 74h40v10H4zM54 74h24v10H54zM112 66h36v18h-36z"/>
+            </g>
+            <g class="hm-roads">
+              <path d="M0 26h152M0 54h152M0 68h152M26 0v88M56 0v88M96 0v88M128 0v88"/>
+            </g>
+            <path class="hm-route" d="M20 78 20 62 74 56 92 42 118 40 140 28"/>
+            <path class="hm-arrow" d="M20 80l-4 6 8-2z"/>
+          </svg>
+          <span class="hm-scan"></span>
+        </div>
+        <div class="hm-foot"><span>12:53 AM</span><span class="hm-signal"><i></i><i></i><i></i><i></i></span></div>
+      </div>
+
+      <div class="hud-objective">
+        <span class="ho-kicker">UNDISCOVERED</span>
+        <span class="ho-text">Who knows what you might find?</span>
+        <span class="ho-dist">125M</span>
+      </div>
+
+      <div class="hud-weapon">
+        <span class="hw-kicker">OVERTURE</span>
+        <div class="hw-actions"><span><b>R</b> RELOAD</span><span><b>F</b> QUICK MELEE</span></div>
+        <div class="hw-row">
+          <span class="hw-ammo">006</span><span class="hw-reserve">0054</span>
+          <svg class="hw-gun" viewBox="0 0 72 28" fill="none">
+            <path d="M2 7h40l7 5h21v5H49l-5 7H30l3-7H16l-4-4H2V7Z" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M34 12h7M42 12v5M20 17v6M24 17l4 6" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </div>
+      </div>
+
+      <span class="hud-wordmark"><b>NIGHT CITY</b> // KANBAN OS <i>2.077</i></span>
+    </div>
+  </div>
   <div id="app">
 
     <header class="topbar">
       <div class="topbar-left">
-        <span class="logo" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 16 16"><rect x="1" y="1" width="5.5" height="14" rx="1.2" fill="currentColor" opacity=".9"/><rect x="9.5" y="1" width="5.5" height="9" rx="1.2" fill="currentColor" opacity=".45"/></svg>
-        </span>
-        <input id="board-name" type="text" class="board-name" maxlength="120" placeholder="Board name" aria-label="Board name" spellcheck="false">
-        <span id="stats" class="stats" aria-live="polite"></span>
+        <div class="seg" role="group" aria-label="View">
+          <button id="view-board" class="seg-btn" type="button" aria-pressed="true">Board</button>
+          <button id="view-calendar" class="seg-btn" type="button" aria-pressed="false">Calendar</button>
+          <button id="view-archive" class="seg-btn" type="button" aria-pressed="false">Archive</button>
+        </div>
       </div>
 
       <div class="search-box" role="search">
         <span class="search-icon" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
         </span>
-        <input id="search" type="text" placeholder="Search cards   /" aria-label="Search cards" spellcheck="false">
+        <input id="search" type="text" placeholder="Search everything" aria-label="Search board, calendar and archive" aria-keyshortcuts="Control+F" title="Search everything (Ctrl + F)" spellcheck="false">
         <button id="search-clear" class="icon-btn" type="button" title="Clear search" aria-label="Clear search" style="display:none">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
         </button>
       </div>
 
+      <div id="search-pop" class="search-pop" hidden role="region" aria-label="Calendar search results"></div>
+
       <div class="topbar-right">
         <button id="btn-add-list" class="btn" type="button">+ Add list</button>
+        <button id="btn-mode" class="ios-switch mode-switch" type="button" role="switch" title="Light / dark mode" aria-label="Dark mode" aria-checked="false"><span class="ios-ico sun" aria-hidden="true"></span><span class="ios-ico moon" aria-hidden="true"></span><span class="ios-knob"></span></button>
         <span class="theme-wrap">
           <button id="btn-theme" class="icon-btn" type="button" title="Change theme" aria-label="Choose theme" aria-haspopup="true" aria-expanded="false"></button>
           <div id="theme-picker" class="theme-picker" hidden role="group" aria-label="Board themes">
             <p class="theme-picker-title">Theme</p>
-            <button type="button" class="theme-option" data-theme-name="sticky" aria-pressed="false">
-              <span class="theme-dots"><i style="background:#e8eae1"></i><i style="background:#fce96c"></i><i style="background:#2b4fd8"></i></span>
-              Sticky notes
+            <button type="button" class="theme-option" data-theme-name="brutal" aria-pressed="false">
+              <span class="theme-dots" style="--a:#f2f2f2;--b:#ffffff;--c:#ffdd33"><i></i><i></i></span>
+              <span class="theme-name">Brutal</span>
+            </button>
+            <button type="button" class="theme-option" data-theme-name="riso" aria-pressed="false">
+              <span class="theme-dots" style="--a:#ffc9de;--b:#fffdf7;--c:#ff3d8b"><i></i><i></i></span>
+              <span class="theme-name">Riso</span>
             </button>
             <button type="button" class="theme-option" data-theme-name="blueprint" aria-pressed="false">
-              <span class="theme-dots"><i style="background:#0b2a5c"></i><i style="background:#184390"></i><i style="background:#ffd23f"></i></span>
-              Blueprint
-            </button>
-            <button type="button" class="theme-option" data-theme-name="cyberpunk" aria-pressed="false">
-              <span class="theme-dots"><i style="background:#0a0a14"></i><i style="background:#1b1b30"></i><i style="background:#00ffd5"></i></span>
-              Cyberpunk
+              <span class="theme-dots" style="--a:#0b2a5c;--b:#1a4a96;--c:#ffd23f"><i></i><i></i></span>
+              <span class="theme-name">Blueprint</span>
             </button>
             <button type="button" class="theme-option" data-theme-name="claude" aria-pressed="false">
-              <span class="theme-dots"><i style="background:#f4efe4"></i><i style="background:#faf7ef"></i><i style="background:#c15f3c"></i></span>
-              Claude
+              <span class="theme-dots" style="--a:#f4efe4;--b:#fffdf8;--c:#c15f3c"><i></i><i></i></span>
+              <span class="theme-name">Claude</span>
             </button>
             <button type="button" class="theme-option" data-theme-name="ios-glass" aria-pressed="false">
-              <span class="theme-dots"><i style="background:#e9edf5"></i><i style="background:rgba(255,255,255,0.7)"></i><i style="background:#0a84ff"></i></span>
-              iOS Glass
+              <span class="theme-dots" style="--a:#dfe8f7;--b:#ffffff;--c:#0a84ff"><i></i><i></i></span>
+              <span class="theme-name">Glass</span>
             </button>
             <button type="button" class="theme-option" data-theme-name="swiss" aria-pressed="false">
-              <span class="theme-dots"><i style="background:#f4f2ec"></i><i style="background:#ffffff"></i><i style="background:#e30613"></i></span>
-              Swiss
+              <span class="theme-dots" style="--a:#f4f2ec;--b:#ffffff;--c:#e30613"><i></i><i></i></span>
+              <span class="theme-name">Swiss</span>
             </button>
-            <button type="button" class="theme-option" data-theme-name="forest" aria-pressed="false">
-              <span class="theme-dots"><i style="background:#eef3ea"></i><i style="background:#ffffff"></i><i style="background:#2f6b3a"></i></span>
-              Forest
+            <button type="button" class="theme-option" data-theme-name="pixel" aria-pressed="false">
+              <span class="theme-dots" style="--a:#7fc9e8;--b:#fbe7b4;--c:#6fae3a"><i></i><i></i></span>
+              <span class="theme-name">Pixel</span>
+            </button>
+            <button type="button" class="theme-option" data-theme-name="cyberpunk" aria-pressed="false">
+              <span class="theme-dots" style="--a:#15131f;--b:#221f35;--c:#f0d23c"><i></i><i></i></span>
+              <span class="theme-name">Cyberpunk</span>
+            </button>
+            <button type="button" class="theme-option" data-theme-name="genshin" aria-pressed="false">
+              <span class="theme-dots" style="--a:#232c47;--b:#f3ead6;--c:#d8be82"><i></i><i></i></span>
+              <span class="theme-name">Genshin</span>
+            </button>
+            <button type="button" class="theme-option" data-theme-name="nier" aria-pressed="false">
+              <span class="theme-dots" style="--a:#cbc8b4;--b:#d6d3c0;--c:#6d6b50"><i></i><i></i></span>
+              <span class="theme-name">NieR</span>
+            </button>
+            <button type="button" class="theme-option" data-theme-name="fallout" aria-pressed="false">
+              <span class="theme-dots" style="--a:#06120a;--b:#1e4a28;--c:#46ff56"><i></i><i></i></span>
+              <span class="theme-name">Fallout</span>
             </button>
           </div>
         </span>
-        <button id="btn-file" class="icon-btn" type="button" title="Connect a board file (e.g. in a shared folder) so every change is saved there automatically" aria-label="Board file"></button>
-        <button id="btn-export" class="icon-btn" type="button" title="Export board as JSON" aria-label="Export board">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M5 7.5L8 10.5l3-3M3 13.5h10"/></svg>
-        </button>
-        <button id="btn-import" class="icon-btn" type="button" title="Import board from JSON" aria-label="Import board">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10.5V2.5M5 5l3-3 3 3M3 13.5h10"/></svg>
-        </button>
-        <button id="btn-reset" class="icon-btn" type="button" title="Reset board" aria-label="Reset board">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 8a5.2 5.2 0 1 0 1.5-3.7L2.8 5.9"/><path d="M2.8 2.6v3.3h3.3"/></svg>
-        </button>
-        <button id="btn-help" class="icon-btn help-btn" type="button" title="Shortcuts &amp; help" aria-label="Help">?</button>
+        <span class="data-wrap">
+          <button id="btn-data" class="icon-btn" type="button" title="Backup, import, export and more" aria-label="Backup, import, export and more" aria-haspopup="true" aria-expanded="false"></button>
+          <div id="data-menu" class="column-menu data-menu" hidden role="menu" aria-label="Backup and settings">
+            <button id="btn-export" class="menu-item" type="button" role="menuitem" title="Export board as JSON"><span class="mi-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7.5L8 10.5l3-3M3 13.5h10"/></svg></span><span class="mi-label">Export board</span></button>
+            <button id="btn-import" class="menu-item" type="button" role="menuitem" title="Import board from JSON"><span class="mi-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10.5V2.5M5 5l3-3 3 3M3 13.5h10"/></svg></span><span class="mi-label">Import board</span></button>
+            <button id="btn-file" class="menu-item" type="button" role="menuitem" aria-label="Automatic backup folder"><span class="mi-ico" aria-hidden="true"></span><span class="mi-label">Auto-backup folder</span><span class="mi-state"></span></button>
+            <div class="menu-sep" role="separator"></div>
+            <button id="btn-cursor" class="menu-item" type="button" role="menuitemcheckbox" aria-checked="true" aria-keyshortcuts="Control+N" title="Use a different mouse cursor for each theme"><span class="mi-ico" aria-hidden="true"></span><span class="mi-label">Theme cursors</span><span class="mi-state">On</span><kbd class="mi-key" aria-hidden="true">Ctrl + N</kbd></button>
+            <button id="btn-sound" class="menu-item" type="button" role="menuitemcheckbox" aria-checked="true" aria-keyshortcuts="Control+M" title="Theme sound effects"><span class="mi-ico" aria-hidden="true"></span><span class="mi-label">Sound effects</span><span class="mi-state">On</span><kbd class="mi-key" aria-hidden="true">Ctrl + M</kbd></button>
+            <button id="btn-graphics" class="menu-item" type="button" role="menuitem" aria-keyshortcuts="Control+G" title="Background animation detail: low, medium or high" aria-label="Background detail: High"><span class="mi-ico" aria-hidden="true"></span><span class="mi-label">Graphics</span><span class="mi-state">High</span><kbd class="mi-key" aria-hidden="true">Ctrl + G</kbd></button>
+            <button id="btn-motion" class="menu-item" type="button" role="menuitemcheckbox" aria-checked="true" aria-keyshortcuts="Control+Shift+M" title="Keep theme animations running even when Windows animations are disabled"><span class="mi-ico" aria-hidden="true"></span><span class="mi-label">Motion override</span><span class="mi-state">On</span><kbd class="mi-key" aria-hidden="true">Ctrl + Shift + M</kbd></button>
+            <button id="btn-font" class="menu-item" type="button" role="menuitem" title="Font size: small, medium or large (Ctrl + Up / Down)" aria-label="Font size: Medium" aria-keyshortcuts="Control+ArrowUp Control+ArrowDown"><span class="mi-ico" aria-hidden="true"></span><span class="mi-label">Font size</span><span class="mi-state">Medium</span></button>
+            <button id="btn-update" class="menu-item" type="button" role="menuitem" title="Check GitHub for a newer version" hidden><span class="mi-ico" aria-hidden="true"></span><span class="mi-label">Check for updates</span><span class="mi-state"></span></button>
+            <div class="menu-sep" role="separator"></div>
+            <button id="btn-reset" class="menu-item danger" type="button" role="menuitem" title="Reset board"><span class="mi-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 8a5.2 5.2 0 1 0 1.5-3.7L2.8 5.9"/><path d="M2.8 2.6v3.3h3.3"/></svg></span><span class="mi-label">Reset board</span></button>
+          </div>
+        </span>
+        <div class="win-controls" role="group" aria-label="Window controls">
+          <button id="win-min" class="win-ctrl" type="button" title="Minimize" aria-label="Minimize">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M3 8.5h10"/></svg>
+          </button>
+          <button id="win-max" class="win-ctrl" type="button" title="Maximize or restore" aria-label="Maximize or restore">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" rx="1"/></svg>
+          </button>
+          <button id="win-close" class="win-ctrl win-close" type="button" title="Close" aria-label="Close">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -85,68 +181,208 @@
       <div id="columns" class="columns"></div>
     </main>
 
+    <section id="calendar" class="calendar" hidden aria-label="Calendar"></section>
+
+    <section id="archive" class="archive drawer" hidden aria-label="Archive">
+      <div class="drawer-head">
+        <h3>Archive</h3>
+      </div>
+      <div id="archive-list" class="archive-list"></div>
+    </section>
+
   </div>
+
+  <!-- Notebook: hidden quick-notes sheet, opened with Tab anywhere in the app (js/notebook.js) -->
+  <div id="nb-scrim" class="nb-scrim" hidden></div>
+  <aside id="notebook" class="drawer notebook" hidden role="dialog" aria-label="Notebook" tabindex="-1">
+    <div class="nb-rail">
+      <div class="nb-rail-head">
+        <h3>Notebook</h3>
+        <button id="nb-new" class="btn nb-new" type="button" title="New page (Alt + N)" aria-keyshortcuts="Alt+N"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>New</button>
+      </div>
+      <input id="nb-search" class="nb-search" type="text" placeholder="Filter pages" aria-label="Filter notebook pages" spellcheck="false" autocomplete="off">
+      <div id="nb-list" class="nb-list" role="listbox" aria-label="Notebook pages"></div>
+      <p class="nb-hint"><kbd>Tab</kbd> or <kbd>Esc</kbd> to close</p>
+    </div>
+    <div class="nb-pane">
+      <div id="nb-main" class="nb-main">
+        <div class="nb-main-head">
+          <input id="nb-title" class="nb-title" type="text" placeholder="Untitled page" maxlength="200" aria-label="Page title" autocomplete="off" spellcheck="false" readonly tabindex="-1">
+          <button id="nb-edit" class="btn nb-edit" type="button" aria-pressed="false" title="Edit this page (Alt + E)" aria-keyshortcuts="Alt+E"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.3 2.7l2 2L5.5 12.5 3 14l.5-2.5z"/></svg><span id="nb-edit-label">Edit</span></button>
+          <button id="nb-pin" class="icon-btn nb-pin" type="button" aria-pressed="false" title="Pin page to the top" aria-label="Pin page"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.8 2.2l4 4-1.6.7-2.1 2.1.3 3-1 1L6.2 9.8 2.8 13.2M6.2 9.8 3.8 8.8l1-1 3-.3L9.9 5.4z"/></svg></button>
+          <button id="nb-close" class="icon-btn" type="button" title="Close (Esc)" aria-label="Close notebook"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+        </div>
+        <div class="nb-links">
+          <div id="nb-chips" class="nb-chips"></div>
+          <button id="nb-link-btn" class="nb-link-btn" type="button" aria-expanded="false" title="Link a board card to this page"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-.8.8M9.2 6.8a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l.8-.8"/></svg>Link card</button>
+        </div>
+        <div id="nb-linker" class="nb-linker" hidden>
+          <input id="nb-linker-input" type="text" placeholder="Find a card to link" aria-label="Find a card to link" autocomplete="off" spellcheck="false">
+          <div id="nb-linker-list" class="nb-linker-list"></div>
+        </div>
+        <div class="rte nb-rte">
+          <div id="nb-bar" class="rte-bar" role="toolbar" aria-label="Text formatting"></div>
+          <div id="nb-body" class="rte-body nb-body" contenteditable="false" role="textbox" aria-multiline="true" aria-label="Page text" data-placeholder="Jot something down…  (type - for a list, # for a heading)" spellcheck="true"></div>
+        </div>
+        <div class="nb-foot">
+          <span id="nb-meta" class="nb-meta"></span>
+          <span class="nb-actions">
+            <button id="nb-make-card" class="btn" type="button" title="Create a board card from this page"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3" width="11" height="10" rx="1.8"/><path d="M5.5 6.5h5M5.5 9.5h3"/></svg>Make card</button>
+            <button id="nb-copy" class="btn" type="button" title="Copy page as plain text"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/><path d="M10.5 5.5V4a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"/></svg>Copy</button>
+            <button id="nb-delete" class="btn danger" type="button" title="Delete this page"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/></svg>Delete</button>
+          </span>
+        </div>
+      </div>
+      <div id="nb-empty" class="nb-empty" hidden>
+        <p>No pages yet.</p>
+        <button id="nb-empty-new" class="btn primary" type="button">New page</button>
+      </div>
+    </div>
+  </aside>
 
   <!-- Card detail modal -->
   <div id="card-modal" class="modal" hidden>
     <div class="modal-backdrop"></div>
     <div class="modal-panel card-panel" role="dialog" aria-modal="true" aria-label="Card details">
       <div class="modal-head">
-        <input id="cm-title" type="text" class="cm-title" placeholder="Card title" maxlength="300" aria-label="Card title">
+        <input id="cm-title" type="text" class="cm-title" placeholder="Card title" maxlength="300" aria-label="Card title" readonly>
+        <button id="cm-edit-title" class="icon-btn" type="button" title="Edit title" aria-label="Edit title" aria-pressed="false">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.3 2.7l2 2L5.5 12.5 3 14l.5-2.5z"/></svg>
+        </button>
         <button id="cm-close" class="icon-btn" type="button" title="Close" aria-label="Close">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
         </button>
       </div>
 
       <div class="modal-body">
-        <textarea id="cm-desc" rows="4" placeholder="Add a description…" aria-label="Description"></textarea>
-
-        <div class="cm-grid">
-          <label class="cm-field">
-            <span>Priority</span>
-            <select id="cm-priority">
-              <option value="0">Low</option>
-              <option value="1" selected>Medium</option>
-              <option value="2">High</option>
-              <option value="3">Urgent</option>
-            </select>
-          </label>
-          <label class="cm-field">
-            <span>Due date</span>
-            <input id="cm-due" type="date" aria-label="Due date">
-          </label>
-          <label class="cm-field">
-            <span>Assignee</span>
-            <input id="cm-assignee" type="text" placeholder="Who's on it?" maxlength="60" aria-label="Assignee">
-          </label>
+        <div class="cm-cols">
+          <div class="cm-left">
+            <div class="rte">
+              <div id="cm-bar" class="rte-bar" role="toolbar" aria-label="Text formatting"></div>
+              <div id="cm-desc" class="rte-body" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Notes" data-placeholder="Add notes…  (type - for a list, # for a heading)" spellcheck="true"></div>
+            </div>
+            <section class="cm-section cm-check-sec">
+              <h4>Checklist <span id="cm-progress-text" class="cm-progress-text"></span></h4>
+              <div id="cm-progress-bar" class="cm-progress-bar"><span></span></div>
+              <ul id="cm-checklist" class="cm-checklist"></ul>
+              <div class="cm-row-input">
+                <input id="cm-new-item" type="text" placeholder="Add an item" maxlength="300" aria-label="New checklist item">
+                <button id="cm-add-item" class="btn" type="button">Add</button>
+              </div>
+            </section>
+          </div>
+          <div class="cm-right">
+            <section class="cm-section cm-labels-sec">
+              <h4>Labels</h4>
+              <div id="cm-labels" class="cm-labels"></div>
+              <div class="cm-row-input">
+                <input id="cm-new-label-name" type="text" placeholder="New label name" maxlength="40" aria-label="New label name">
+                <input id="cm-new-label-color" type="color" value="#3e63dd" title="Label color" aria-label="Label color">
+                <button id="cm-add-label" class="btn" type="button">Add</button>
+              </div>
+            </section>
+            <section class="cm-section cm-images-sec">
+              <h4>Images <span id="cm-img-count" class="cm-progress-text"></span></h4>
+              <div id="cm-images" class="img-grid"></div>
+              <div class="img-add">
+                <button id="cm-add-image" class="btn" type="button">+ Add images</button>
+                <span class="muted">or paste / drop them here</span>
+              </div>
+              <input id="cm-image-input" type="file" accept="image/*" multiple hidden>
+            </section>
+            <section class="cm-section cm-prio-sec">
+              <h4>Priority &amp; due date</h4>
+              <div class="cm-prio-row">
+                <div id="cm-priority" class="seg cm-prio" role="group" aria-label="Priority">
+                  <button class="seg-btn" type="button" data-priority="0" aria-pressed="false">Low</button>
+                  <button class="seg-btn" type="button" data-priority="1" aria-pressed="true">Medium</button>
+                  <button class="seg-btn" type="button" data-priority="2" aria-pressed="false">High</button>
+                </div>
+                <input id="cm-due" type="date" aria-label="Due date" title="Due date">
+              </div>
+            </section>
+          </div>
         </div>
-
-        <section class="cm-section">
-          <h4>Labels</h4>
-          <div id="cm-labels" class="cm-labels"></div>
-          <div class="cm-row-input">
-            <input id="cm-new-label-name" type="text" placeholder="New label name" maxlength="40" aria-label="New label name">
-            <input id="cm-new-label-color" type="color" value="#3e63dd" title="Label color" aria-label="Label color">
-            <button id="cm-add-label" class="btn" type="button">Add</button>
-          </div>
-        </section>
-
-        <section class="cm-section">
-          <h4>Checklist <span id="cm-progress-text" class="cm-progress-text"></span></h4>
-          <div id="cm-progress-bar" class="cm-progress-bar"><span></span></div>
-          <ul id="cm-checklist" class="cm-checklist"></ul>
-          <div class="cm-row-input">
-            <input id="cm-new-item" type="text" placeholder="Add an item" maxlength="300" aria-label="New checklist item">
-            <button id="cm-add-item" class="btn" type="button">Add</button>
-          </div>
-        </section>
       </div>
 
       <div class="modal-foot">
         <span id="cm-meta" class="cm-meta"></span>
-        <button id="cm-delete" class="btn danger" type="button">Delete card</button>
+        <span class="foot-actions">
+          <button id="cm-archive" class="btn" type="button">Archive</button>
+          <button id="cm-delete" class="btn danger" type="button">Delete card</button>
+        </span>
       </div>
     </div>
+  </div>
+
+  <!-- Event editor (lives in the calendar's right panel; moved there when the calendar is built) -->
+  <div id="event-modal" class="ev-inline">
+    <div class="event-panel ev-card" role="group" aria-label="Event">
+      <div class="ev-head">
+        <h3 id="ev-heading" class="ev-heading">Add event</h3>
+        <button id="ev-close" class="icon-btn" type="button" title="Stop editing" aria-label="Stop editing"></button>
+      </div>
+      <input id="ev-title" type="text" class="ev-title" placeholder="Event title  (e.g. Lab audit fri 2pm)" maxlength="200" aria-label="Event title" autocomplete="off" spellcheck="false">
+      <div class="ev-row ev-allday-row">
+        <span class="ev-row-label">All-day</span>
+        <button id="ev-allday" class="ios-switch" type="button" role="switch" aria-checked="false" aria-label="All-day event"><span class="ios-knob"></span></button>
+      </div>
+      <div class="ev-row ev-repeat-row">
+        <span class="ev-row-label">Repeat</span>
+        <select id="ev-repeat" class="ev-repeat-select" aria-label="Repeat">
+          <option value="">Never</option>
+          <option value="weekly">Every week</option>
+          <option value="monthly">Every month</option>
+        </select>
+      </div>
+      <div id="ev-repeat-detail" class="ev-repeat-detail" hidden>
+        <span id="ev-repeat-note" class="ev-repeat-note"></span>
+        <label id="ev-repeat-day-wrap" class="ev-repeat-day" hidden><span>on day</span><input id="ev-repeat-day" type="number" min="1" max="31" inputmode="numeric" aria-label="Day of month"></label>
+      </div>
+      <div class="ev-when">
+        <div class="ev-when-row">
+          <span class="ev-when-label">From</span>
+          <input id="ev-date" type="date" aria-label="Start date">
+          <input id="ev-time" type="time" class="ev-time" aria-label="Start time">
+        </div>
+        <div class="ev-when-row">
+          <span class="ev-when-label">To</span>
+          <input id="ev-end-date" type="date" aria-label="End date">
+          <input id="ev-end-time" type="time" class="ev-time" aria-label="End time">
+        </div>
+      </div>
+      <div id="ev-quick" class="ev-quick" role="group" aria-label="Quick duration">
+        <button type="button" class="chip-btn ev-dur" data-min="30">30 min</button>
+        <button type="button" class="chip-btn ev-dur" data-min="60">1 hour</button>
+        <button type="button" class="chip-btn ev-dur" data-min="120">2 hours</button>
+        <button type="button" class="chip-btn ev-days" data-days="1">+1 day</button>
+        <button type="button" class="chip-btn ev-days" data-days="7">+1 week</button>
+        <button type="button" class="chip-btn ev-days" data-days="0">Single day</button>
+      </div>
+      <div class="ev-field"><span class="ev-field-label">Colour</span><div id="ev-colors" class="ev-colors" role="group" aria-label="Event colour"></div></div>
+      <label class="ev-field"><span class="ev-field-label">Notes</span><textarea id="ev-notes" rows="2" placeholder="Optional details" aria-label="Event notes"></textarea></label>
+      <section id="ev-img-sec" class="ev-field" hidden>
+        <span class="ev-field-label">Images <span id="ev-img-count" class="cm-progress-text"></span></span>
+        <div id="ev-images" class="img-grid"></div>
+        <div class="img-add">
+          <button id="ev-add-image" class="btn" type="button">+ Add images</button>
+        </div>
+        <input id="ev-image-input" type="file" accept="image/*" multiple hidden>
+      </section>
+      <div class="ev-actions">
+        <button id="ev-delete" class="btn danger" type="button" hidden>Delete</button>
+        <button id="ev-done" class="btn primary" type="button">Add event</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image viewer -->
+  <div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button id="lb-close" class="lb-btn lb-close" type="button" aria-label="Close"></button>
+    <button id="lb-prev" class="lb-btn lb-prev" type="button" aria-label="Previous image"></button>
+    <img id="lb-img" class="lb-img" alt="">
+    <button id="lb-next" class="lb-btn lb-next" type="button" aria-label="Next image"></button>
+    <div id="lb-count" class="lb-count"></div>
   </div>
 
   <!-- Confirm dialog -->
@@ -155,37 +391,10 @@
     <div class="modal-panel confirm-panel" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
       <h3 id="confirm-title">Are you sure?</h3>
       <p id="confirm-message" class="confirm-message"></p>
+      <input id="confirm-input" class="confirm-input" type="text" hidden aria-label="Value">
       <div class="confirm-actions">
         <button id="confirm-cancel" class="btn" type="button">Cancel</button>
         <button id="confirm-yes" class="btn danger" type="button">Yes, do it</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Help modal -->
-  <div id="help-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-help></div>
-    <div class="modal-panel help-panel" role="dialog" aria-modal="true" aria-label="Shortcuts and help">
-      <div class="modal-head">
-        <h3>Shortcuts &amp; help</h3>
-        <button class="icon-btn" type="button" data-close-help title="Close" aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <dl class="help-list">
-          <dt>/ or Ctrl+K</dt><dd>Focus search</dd>
-          <dt>N</dt><dd>New card in the first list</dd>
-          <dt>L</dt><dd>Add a new list</dd>
-          <dt>Ctrl+Z</dt><dd>Undo last delete / clear / reset</dd>
-          <dt>Esc</dt><dd>Close dialogs, cancel composers</dd>
-        </dl>
-        <p class="muted help-note">
-          Everything is stored locally in your browser (localStorage) — nothing leaves this computer.
-          Use <strong>Export</strong> in the toolbar to keep a backup or move the board elsewhere.
-          Click the <strong>folder icon</strong> to connect a board file (e.g. on a shared folder): every change is then saved there automatically, the board is backed up again when you close or hide the page, and the connection survives restarts — if the file has changed since your last session, it is restored from that backup automatically on startup.
-          In browsers that cannot write files directly (such as Brave), the folder icon loads a board file read-only instead — use <strong>Export</strong> to save changes back to it.
-        </p>
       </div>
     </div>
   </div>
@@ -196,11 +405,43 @@
     <button id="toast-action" class="toast-action" type="button" hidden></button>
   </div>
 
+  <!-- Reminders: calendar items due in a week / in 3 days / today (js/app.js, "reminders") -->
+  <aside id="reminders" class="drawer reminders" hidden role="region" aria-label="Reminders" aria-live="polite">
+    <div class="rem-head">
+      <span class="rem-bell" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5h10l-1.2-1.8V7a3.8 3.8 0 0 0-7.6 0v2.7zM6.6 13.6a1.5 1.5 0 0 0 2.8 0"/></svg></span>
+      <h3>Reminders</h3>
+      <span id="rem-count" class="rem-count"></span>
+    </div>
+    <div id="rem-list" class="rem-list"></div>
+    <div class="rem-foot">
+      <button id="rem-later" class="btn" type="button" title="Hide for now. Comes back next time the board starts, or tomorrow.">Later</button>
+      <button id="rem-done" class="btn primary" type="button" title="Dismiss all of these reminders">Got it</button>
+    </div>
+  </aside>
+
   <input type="file" id="import-file" accept=".json,application/json" hidden>
   <input type="file" id="board-file-input" accept=".json,application/json" hidden>
 
+  <div id="win-resize" aria-hidden="true">
+    <span class="wr-n" data-win-resize="n"></span>
+    <span class="wr-e" data-win-resize="e"></span>
+    <span class="wr-se" data-win-resize="se"></span>
+    <span class="wr-s" data-win-resize="s"></span>
+    <span class="wr-sw" data-win-resize="sw"></span>
+    <span class="wr-w" data-win-resize="w"></span>
+    <span class="wr-nw" data-win-resize="nw"></span>
+  </div>
+
+  <!-- Last session, written by the auto-backup. Missing on first run (a harmless 404). -->
+  <script src="Kanban%20Auto-Backups/kanban-backup-latest.js"></script>
   <script src="vendor/Sortable.min.js"></script>
   <script src="js/state.js"></script>
+  <script src="js/picker.js"></script>
+  <script src="js/richtext.js"></script>
+  <script src="js/notebook.js"></script>
+  <script src="js/images.js"></script>
+  <script src="js/sfx.js"></script>
+  <script src="js/pixelfarm.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

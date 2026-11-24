@@ -1,84 +1,18 @@
 # Kanban Board
 
-A lightweight, fully offline Kanban board that runs straight from your file system.
-No server, no build step, no account — double-click `index.html` and work.
+A lightweight, offline Kanban board for Windows: a small native Rust program (tao + WebView2) around a
+plain HTML/CSS/JS page. Board, calendar with reminders, archive, notebook, search and eleven themes.
 
-Built for low-end machines: ~55 KB of JavaScript total (including the vendored
-drag-and-drop library), system fonts, inline SVG icons, zero network requests.
+**Download:** get `kanban-rust.exe` from the [latest release](https://github.com/meowyourhead/kanban-board/releases/latest),
+put it in a folder you can write to and run it. Your board is kept in a `Kanban Auto-Backups` folder beside it.
+Needs the WebView2 runtime (already part of Windows 11).
 
-## Run it
+**Updates:** settings menu > *Check for updates*. The app only contacts GitHub when you press it, and only
+installs a version you approve. Releases are signed (Ed25519) and checked before installing.
 
-Double-click **`index.html`** (Chrome or Edge recommended). That's it.
+**Build:** run `Build.cmd`, or `cargo build --release`.
 
-## Features
+More: [README-RUST.md](README-RUST.md) (user guide), [AGENTS.md](AGENTS.md) (developer notes).
 
-- **Columns (lists)** — add, rename (click the title), collapse/expand, reorder by
-  dragging the header, per-list **WIP limits** (count badge warns when exceeded),
-  sort by priority / due date / created, clear all cards, delete list
-- **Cards** — drag within or between columns, title, description, **priority**
-  (Low / Medium / High / Urgent), **due date** with **overdue highlighting**,
-  assignee, **labels** (create, color, delete), **checklists** with progress bar
-- **Search** — filter cards by title, description, assignee, or label name
-  (press `/`)
-- **Stats** — live card count, overdue count, and search match count in the toolbar
-- **Eight themes** — Light, Dark, Sticky notes, Blueprint, Factory, Cyberpunk,
-  Claude, and iOS Glass; pick one from the toolbar picker, preference is saved
-- **Import / export** — board as a portable JSON file; import replaces the current
-  board (with confirmation)
-- **Undo** — delete card / clear list / delete list / reset board can all be undone
-  with **Ctrl+Z** or the toast button
-- **Keyboard shortcuts**
-
-| Shortcut       | Action                          |
-| -------------- | ------------------------------- |
-| `/` or `Ctrl+K`| Focus search                    |
-| `N`            | New card (first list)           |
-| `L`            | Add a new list                  |
-| `Ctrl+Z`       | Undo last destructive action    |
-| `Esc`          | Close dialogs / cancel composers|
-
-## Data & privacy
-
-Everything is stored in your browser's `localStorage` under the key
-`kanban.board.v1` — per browser profile, per machine. Nothing is ever sent over
-the network. To back up or move your board, use **Export** in the toolbar; to
-restore, use **Import**.
-
-You can also connect a board file (folder icon in the toolbar, e.g. in a shared
-folder): every change is auto-saved there, the board is backed up again when you
-close or hide the page, and on startup the app restores from that backup
-automatically if it has changed — no prompt.
-
-> Note: clearing site data in the browser (or using a private window) removes the
-> board. Keep a JSON export if it matters.
-
-## Project layout
-
-```
-index.html              app shell (toolbar, board, modals)
-css/styles.css          design system, seven themes (sticky / blueprint / cyberpunk / claude / ios-glass / swiss / forest)
-js/state.js             pure data model + operations (no DOM) — the tested core
-js/app.js               UI layer: rendering, drag & drop, modals, shortcuts
-vendor/Sortable.min.js  vendored drag-and-drop library (Sortable.js)
-tests/state.test.js     Node.js test suite for the core data model
-package.json            dev scripts (test + re-vendoring)
-```
-
-## Development
-
-Requires only Node.js (no other dependencies at runtime).
-
-```sh
-npm install        # installs sortablejs (dev only)
-npm test           # runs the core test suite (node --test)
-npm run vendor     # re-copies Sortable.min.js into vendor/
-```
-
-`state.js` is a UMD module: it attaches to `window.KanbanState` in the browser
-and to `module.exports` in Node, so the whole data model is testable headlessly.
-
-### Why classic scripts instead of ES modules?
-
-Chrome/Edge block `import` statements on `file://` pages (CORS), which would
-break the double-click launch. Classic scripts + global namespaces keep the app
-usable with zero tooling.
+Some themes are fan-made tributes; this project is not affiliated with any game or company. Bundled fonts are
+under the SIL Open Font License (see `vendor/fonts`).

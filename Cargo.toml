@@ -1,0 +1,42 @@
+[package]
+name = "kanban-rust"
+version = "1.1.0"
+edition = "2021"
+description = "A lightweight, offline Kanban board (standalone Rust desktop app)."
+publish = false
+default-run = "kanban-rust"
+
+[[bin]]
+name = "kanban-rust"
+path = "src/main.rs"
+
+# Release-signing tool (keygen / sign). Not shipped; see tools/release.ps1.
+[[bin]]
+name = "kanban_sign"
+path = "src/bin/kanban_sign.rs"
+
+[dependencies]
+tao = "0.37"
+wry = "0.57"
+http = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = "0.4"
+percent-encoding = "2"
+# Updater: HTTPS through Windows' own TLS (SChannel), Ed25519-signed releases.
+ureq = { version = "2.12", default-features = false, features = ["native-tls"] }
+native-tls = "0.2"
+ed25519-dalek = "2"
+sha2 = "0.10"
+# kanban_sign only (key generation, wiping the secret key from memory)
+zeroize = "1"
+getrandom = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Security", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true

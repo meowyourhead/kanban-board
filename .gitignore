@@ -1,1 +1,25 @@
-node_modules/
+# Allow-list: nothing is committed unless it is named here.
+# (Your board, preferences, logs and builds live in this folder too and must never be committed.)
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/README-RUST.md
+!/AGENTS.md
+!/Cargo.toml
+!/Cargo.lock
+!/build.rs
+!/index.html
+!/update_pubkey.txt
+!/*.cmd
+!/src/
+!/css/
+!/js/
+!/vendor/
+!/build/
+!/tools/
+!/tests/
+
+# commercial font: kept locally, never published
+/vendor/fonts/zh-cn.ttf
+*.exe
