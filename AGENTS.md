@@ -376,9 +376,9 @@ Other runtime files next to the exe:
   effects call `motionAllowed()`; Graphics Medium/Low still reduce effects regardless. Default is
   off, so the OS preference is respected until the user explicitly forces motion.
 - The top-left `.seg` tabs are 30 px tall with 15 px side padding and 13 px text; the
-  nier/fallout overrides use 12 px and Pixel 15 px (pixel font). This keeps the three view tabs easy to hit.
+  nier/fallout overrides use 12 px. This keeps the three view tabs easy to hit.
 - Pixel theme (cosy farm): every rule is written once under `[data-theme="pixel"]`; night mode only swaps
-  the `--pf-*` / palette variables. Frames are a 16x16 SVG `border-image` (`--pf-frame`, slice 5, 10px),
+  the `--pf-*` / palette variables. Frames are a 16x16 SVG `border-image` (`--pf-frame`, slice 4, 8px),
   so framed panels need `background-clip: padding-box`. `#pixel-farm` (inside `#bg`) holds one static
   canvas (4px art pixels, repainted only on size/season/mode change) plus `.pf-cloud` / `.pf-bit`
   elements moved by CSS transforms: petals, leaves, snow, or fireflies at night. The season follows the
@@ -1016,3 +1016,6 @@ Always verify in this order after a native change.
   flash at start); signed updater; page embedded in the exe; published to GitHub. Measured with 300 cards on a
   9800X3D: checkbox 111 -> 4 ms, note keystroke 104 -> 4, list menu 103 -> 1, theme switch 109 -> 22, back to
   Board 109 -> 7, search keystroke 215 -> 30. Idle cost per theme was already within measurement noise.
+- Pixel scale-down (2026-11-25): text about 14% smaller (card title 15.5 -> 13.5px, notes 14 -> 12.5, list title 18 -> 16),
+  8px frames (4 rings), lists 294px, tighter padding/gaps, so Pixel matches the other themes' density (same test list
+  733 -> 617px tall; others 565-641). Bold W reshaped in the pixel font. Page-only, but needs a rebuild to show.
