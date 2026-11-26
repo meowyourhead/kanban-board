@@ -1,5 +1,5 @@
 /*
- * pixelfarm.js — the Pixel theme's background: an original little farm valley, drawn at low resolution
+ * pixelfarm.js — the Stardew theme's (internal id 'pixel') background: an original little farm valley, drawn at low resolution
  * on a canvas and scaled up. Follows the real-world season (Mar/Jun/Sep/Dec) and the light/dark mode.
  *
  *   KanbanFarm.render(active, night) -> 'Spring' | 'Summer' | 'Fall' | 'Winter'
@@ -21,7 +21,11 @@
   };
   var NIGHT_SKY = ['#0d1433', '#141d47', '#1d2a5c', '#2b3a70', '#43507f'];
 
-  var host = null, canvas = null, key = '', timer = 0, active = false, night = false;
+  var host = null, canvas = null, key = '', timer = 0, active = false, night = false, observed = false;
+
+  // the host is position:absolute inset:0 inside the fixed #bg, so its box is the real visible area
+  function viewW() { return Math.max(host && host.clientWidth || 0, window.innerWidth || 0, document.documentElement.clientWidth || 0); }
+  function viewH() { return Math.max(host && host.clientHeight || 0, window.innerHeight || 0, document.documentElement.clientHeight || 0); }
 
   function season() { return SEASONS[Math.floor(((new Date().getMonth() + 10) % 12) / 3)]; }
 
@@ -36,7 +40,8 @@
   }
 
   function paint() {
-    var W = Math.max(80, Math.ceil(window.innerWidth / PX)), H = Math.max(60, Math.ceil(window.innerHeight / PX));
+    var vw = viewW(), vh = viewH();
+    var W = Math.max(80, Math.ceil(vw / PX)), H = Math.max(60, Math.ceil(vh / PX));
     var name = season(), P = DAY[name], R = rng(7301 + SEASONS.indexOf(name) * 97);
     canvas.width = W; canvas.height = H;
     canvas.style.width = W * PX + 'px'; canvas.style.height = H * PX + 'px';
@@ -207,7 +212,8 @@
       key = '';
       return;
     }
-    var next = [season(), night, window.innerWidth, window.innerHeight].join('|');
+    if (!observed && window.ResizeObserver) { observed = true; new ResizeObserver(schedule).observe(host); }
+    var next = [season(), night, viewW(), viewH()].join('|');
     if (next === key) return;
     key = next;
     host.innerHTML = '<canvas></canvas>' + extras();
@@ -216,11 +222,15 @@
     try { paint(); } catch (e) { /* the flat sky/grass background in the css stays */ }
   }
 
-  window.addEventListener('resize', function () {
+  // window resize alone is not enough in the desktop host: the window is built hidden and then
+  // restored/maximized, so the host box is watched too; a page that comes back visible rechecks as well
+  function schedule() {
     if (!active) return;
     clearTimeout(timer);
     timer = setTimeout(build, 180);
-  });
+  }
+  window.addEventListener('resize', schedule);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) schedule(); });
 
   window.KanbanFarm = {
     render: function (on, isNight) { active = !!on; night = !!isNight; build(); return active ? season() : ''; },

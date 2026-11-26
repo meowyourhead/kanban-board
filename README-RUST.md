@@ -137,7 +137,7 @@ folder.
   on the day, in a panel at the bottom of the window (while the program is open). If it was closed on the
   day a reminder was due, it shows the next time you start it. **Got it** dismisses, **Later** hides until
   the next start or day. Weekly events skip the week-before reminder.
-- The Pixel theme is a cosy farm: wooden frames, paper cards and a valley that follows the real season,
+- The Stardew theme (internal id `pixel`) is a cosy farm: wooden frames, paper cards and a valley that follows the real season,
   with a night version in dark mode.
 - The Mario, Persona 5, Sticky notes and FFXVI themes are retired. Boards that used them open with Claude.
 - The Glass theme uses macOS-style cursors, and the Genshin theme uses the white-and-gold
@@ -167,7 +167,7 @@ folder.
   **On** by default; turn it off to follow Windows. The override applies only while the app window is focused;
   when you switch to another program the app goes back to following Windows' setting. Graphics
   Medium/Low still reduce the effects.
-  Background movement, Genshin stars and the Pixel farm use compositor-friendly transforms, and
+  Background movement, Genshin stars and the Stardew farm use compositor-friendly transforms, and
   blur/particle counts are reduced for integrated GPUs.
 - **Build errors:** run `cargo build --release` in this folder to see the full messages.
 

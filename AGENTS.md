@@ -377,7 +377,8 @@ Other runtime files next to the exe:
   off, so the OS preference is respected until the user explicitly forces motion.
 - The top-left `.seg` tabs are 30 px tall with 15 px side padding and 13 px text; the
   nier/fallout overrides use 12 px. This keeps the three view tabs easy to hit.
-- Pixel theme (cosy farm): every rule is written once under `[data-theme="pixel"]`; night mode only swaps
+- Pixel theme (cosy farm; shown to users as **Stardew**, internal id stays `pixel` so saved boards and the
+  Electron build keep working): every rule is written once under `[data-theme="pixel"]`; night mode only swaps
   the `--pf-*` / palette variables. Frames are a 16x16 SVG `border-image` (`--pf-frame`, slice 4, 8px),
   so framed panels need `background-clip: padding-box`. `#pixel-farm` (inside `#bg`) holds one static
   canvas (4px art pixels, repainted only on size/season/mode change) plus `.pf-cloud` / `.pf-bit`
@@ -1019,3 +1020,7 @@ Always verify in this order after a native change.
 - Pixel scale-down (2026-11-25): text about 14% smaller (card title 15.5 -> 13.5px, notes 14 -> 12.5, list title 18 -> 16),
   8px frames (4 rings), lists 294px, tighter padding/gaps, so Pixel matches the other themes' density (same test list
   733 -> 617px tall; others 565-641). Bold W reshaped in the pixel font. Page-only, but needs a rebuild to show.
+- Stardew rename + farm coverage (2026-11-26): the Pixel theme is labelled "Stardew" in the picker and the
+  theme button tooltip (id unchanged). The farm canvas now has `min-width/min-height: 100%` and repaints from a
+  `ResizeObserver` on `#pixel-farm` (plus `visibilitychange`), so a hidden-then-maximized window no longer leaves
+  the flat `--pf-sky` showing at the right/bottom when a `resize` event is missed. Page-only, needs a rebuild.
