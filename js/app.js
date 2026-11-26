@@ -335,9 +335,9 @@
 
     var btn = $('#btn-theme');
     if (btn) {
-      var themeName = App.board.theme;
-      if (themeName === 'genshin') themeName += ' · ' + GENSHIN_ELEMENT_LABELS[genEl] + ' day';
-      if (themeName === 'pixel') themeName = 'stardew' + (farmSeason ? ' · ' + farmSeason : '');
+      var themeName = themeLabel(App.board.theme);
+      if (App.board.theme === 'genshin') themeName += ' · ' + GENSHIN_ELEMENT_LABELS[genEl] + ' day';
+      if (App.board.theme === 'pixel' && farmSeason) themeName += ' · ' + farmSeason;
       btn.title = 'Change theme (current: ' + themeName + ')';
       btn.setAttribute('aria-label', btn.title);
       btn.setAttribute('aria-expanded', App.themePickerOpen ? 'true' : 'false');

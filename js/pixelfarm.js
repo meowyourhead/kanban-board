@@ -23,9 +23,11 @@
 
   var host = null, canvas = null, key = '', timer = 0, active = false, night = false, observed = false;
 
-  // the host is position:absolute inset:0 inside the fixed #bg, so its box is the real visible area
-  function viewW() { return Math.max(host && host.clientWidth || 0, window.innerWidth || 0, document.documentElement.clientWidth || 0); }
-  function viewH() { return Math.max(host && host.clientHeight || 0, window.innerHeight || 0, document.documentElement.clientHeight || 0); }
+  // The host is position:absolute inset:0 inside the fixed #bg, so its box is the visible area in page
+  // pixels. That, not the window size, is the right measure: Font size zooms <html>, so at Small (90%) a
+  // window-sized scene leaves a strip uncovered and at Large (115%) it overflows and loses its bottom.
+  function viewW() { return Math.max(1, host && host.clientWidth || window.innerWidth || 0); }
+  function viewH() { return Math.max(1, host && host.clientHeight || window.innerHeight || 0); }
 
   function season() { return SEASONS[Math.floor(((new Date().getMonth() + 10) % 12) / 3)]; }
 
@@ -191,7 +193,7 @@
     var name = season(), html = '', i;
     for (i = 0; i < 5; i++) {
       var w = 96 + Math.round(Math.random() * 5) * 16, dur = 120 + Math.random() * 110;
-      html += '<i class="pf-cloud" style="top:' + (7 + Math.random() * 27).toFixed(1) + '%;width:' + w + 'px;height:' + w / 4 + 'px;--x:' + (i * 20 + Math.random() * 12).toFixed(0) + 'vw;--dur:' + dur.toFixed(0) + 's;--delay:' + (-dur * (i + Math.random()) / 5).toFixed(0) + 's"></i>';
+      html += '<i class="pf-cloud" style="top:' + (7 + Math.random() * 27).toFixed(1) + '%;width:' + w + 'px;height:' + w / 4 + 'px;--x:' + ((i * 0.2 + Math.random() * 0.12) * viewW()).toFixed(0) + 'px;--dur:' + dur.toFixed(0) + 's;--delay:' + (-dur * (i + Math.random()) / 5).toFixed(0) + 's"></i>';
     }
     var flies = night && name !== 'Winter';
     var tone = flies ? ['#fff3a0', '#d8ff8a'] : name === 'Spring' ? ['#ffd1e6', '#f7a9cb', '#ffffff'] : name === 'Summer' ? ['#ffffff', '#fff3b0'] : name === 'Fall' ? ['#f7a53c', '#e0742c', '#c9502a', '#f5cf5b'] : ['#ffffff', '#eaf4ff'];
@@ -216,10 +218,12 @@
     var next = [season(), night, viewW(), viewH()].join('|');
     if (next === key) return;
     key = next;
+    host.style.setProperty('--farm-w', viewW() + 'px'); // clouds and falling bits travel the same area
+    host.style.setProperty('--farm-h', viewH() + 'px');
     host.innerHTML = '<canvas></canvas>' + extras();
     canvas = host.firstChild;
     document.documentElement.setAttribute('data-farm-season', season().toLowerCase());
-    try { paint(); } catch (e) { /* the flat sky/grass background in the css stays */ }
+    try { paint(); } catch (e) { if (window.console) console.error('farm background', e); } // the flat css sky/grass stays
   }
 
   // window resize alone is not enough in the desktop host: the window is built hidden and then

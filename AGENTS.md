@@ -537,7 +537,7 @@ Always verify in this order after a native change.
      return to `"on"`. Reload while focused; the On state must persist. Set Graphics Medium with the
      override On and confirm the star/HUD layers remain hidden.
    - **Genshin daily element:** reload; `html[data-genshin-element]` must be stable for the day,
-     differ from yesterday, and `#btn-theme` must name it (`genshin · <Element> day`). Light mode
+     differ from yesterday, and `#btn-theme` must name it (`Genshin · <Element> day`; the tooltip uses the picker label). Light mode
      must recolor the background, panels and stars for all seven elements; dark mode keeps the gold
      UI. Dispatch `genshin-element-change` after setting a different attribute to verify the stars
      rebuild. The midnight timer calls the same refresh and re-renders the title.
@@ -1024,3 +1024,7 @@ Always verify in this order after a native change.
   theme button tooltip (id unchanged). The farm canvas now has `min-width/min-height: 100%` and repaints from a
   `ResizeObserver` on `#pixel-farm` (plus `visibilitychange`), so a hidden-then-maximized window no longer leaves
   the flat `--pf-sky` showing at the right/bottom when a `resize` event is missed. Page-only, needs a rebuild.
+- Stardew background sizing (2026-11-26, v1.1.2): the farm measures `#pixel-farm` (page pixels), not the window, because
+  Font size zooms `<html>`: at Small it left a 10% strip uncovered, at Large it overflowed and cut off the crops. Clouds and
+  falling bits travel `--farm-w`/`--farm-h`. Combined with the ResizeObserver repaint above. The theme tooltip uses picker
+  labels ("Stardew · Fall", "Genshin · Geo day"). Verified full coverage at 3 window sizes x 3 font sizes.

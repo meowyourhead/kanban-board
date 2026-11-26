@@ -3577,12 +3577,12 @@ html[data-theme="pixel"] #bg::before, html[data-theme="pixel"] #bg::after { cont
 #pixel-farm canvas { position: absolute; left: 0; top: 0; min-width: 100%; min-height: 100%; image-rendering: pixelated; }
 .pf-cloud { position: absolute; left: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='8' viewBox='0 0 32 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' d='M8 0h4v1H8zM6 1h8v1H6zM20 1h4v1H20zM4 2h12v1H4zM18 2h8v1H18zM2 3h26v1H2zM1 4h30v1H1zM0 5h32v1H0zM3 6h6v1H3zM13 6h8v1H13zM25 6h4v1H25z'/%3E%3Cpath fill='%23d3e8f3' d='M1 6h2v1H1zM9 6h4v1H9zM21 6h4v1H21zM29 6h2v1H29zM3 7h6v1H3zM13 7h8v1H13zM25 7h4v1H25z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; image-rendering: pixelated; opacity: .85; animation: pf-cloud var(--dur) linear var(--delay) infinite; }
 html[data-theme="pixel"][data-alt="1"] .pf-cloud { opacity: .13; }
-@keyframes pf-cloud { from { transform: translate3d(-220px, 0, 0); } to { transform: translate3d(calc(100vw + 20px), 0, 0); } }
+@keyframes pf-cloud { from { transform: translate3d(-220px, 0, 0); } to { transform: translate3d(calc(var(--farm-w, 100vw) + 20px), 0, 0); } }
 .pf-bit { position: absolute; top: -12px; opacity: .9; animation: pf-fall var(--dur) linear var(--delay) infinite; }
 @keyframes pf-fall {
   from { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(calc(var(--dx) * .65), 55vh, 0); }
-  to { transform: translate3d(var(--dx), 106vh, 0); }
+  50% { transform: translate3d(calc(var(--dx) * .65), calc(var(--farm-h, 100vh) * .55), 0); }
+  to { transform: translate3d(var(--dx), calc(var(--farm-h, 100vh) * 1.06), 0); }
 }
 .pf-bit.pf-fly { box-shadow: 0 0 8px 2px rgba(255, 243, 160, .5); animation: pf-fly var(--dur) ease-in-out var(--delay) infinite; }
 @keyframes pf-fly {
